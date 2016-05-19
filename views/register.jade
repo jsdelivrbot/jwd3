@@ -1,0 +1,30 @@
+extends layout
+
+block content
+    section
+        hgroup
+            h1 register
+    
+        fieldset
+            legend registering
+            ol
+                li
+                    label(for="login") Email address
+                    input(id="login", type="email", value="j@m.ru")
+                li
+                    label(for="password") Password
+                    input(id="password", type="password", value="123")
+                li
+                    label(for="confirmPassword") Confirm password
+                    input(id="confirmPassword", type="password", value="123")
+            
+            input(id="csrftoken", type="hidden", value="#{csrftoken}")
+            input(id="registerBtn", type="button", value="Api register")
+
+            br
+            br
+            br
+            a(href="/login") login here
+
+    //script(src="//code.jquery.com/jquery-2.2.0.min.js")
+    script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")

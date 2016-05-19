@@ -1,0 +1,63 @@
+input[readonly] {
+    /*opacity: 0.3;*/
+    background-color: #d5d2d2;
+}
+
+div[readonly] {
+    /*opacity: 0.3;*/
+    /*background-color: #d5d2d2;*/
+}
+
+.preview-image {
+    /*min-width: 50px;
+    max-width: 50px;*/
+    
+    margin-left: 5px;
+    margin-right: 5px;
+    
+    border: 2px solid black;
+}
+
+.with-margin {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.table_row {
+    display: table;
+    table-layout: fixed;
+    border-spacing: 10px;
+    background-color: #f0f9f3;
+}
+
+.table_column {
+    display: table-cell;
+    background-color: #d1f5f5;
+}
+
+.status-message {
+    background-color: #eaf8b9;
+}
+
+.warning-text {
+    color: red;
+}
+
+.set-visible {
+    text-decoration: underline;
+    color: navy;
+    cursor: pointer;
+}
+
+.unvisible {
+    /*display: none;*/
+}
+
+
+#wcfAddress, #imageAddress {
+    width: 100%;
+}
+
+#logging {
+    display: none;
+}

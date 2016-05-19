@@ -1,0 +1,38 @@
+doctype 5
+
+html
+  head
+    title jwd nodejs server
+
+    script(src="/libs/jquery-1.8.3.min.js")
+    script(src="/scripts/utils.js")
+    script(src="/scripts/common.js")
+
+    link(rel="stylesheet", href="/libs/jquery.ui/jquery-ui.css")
+    link(rel="stylesheet", href="/stylesheets/common.css")
+
+    block head
+  body   
+    header jwd nodejs server
+        ul
+            li 
+                a(href="/register") Register
+            li 
+                a(href="/login") Login
+            li 
+                a(href="/protected") Protected grid
+            li 
+                a(href="/serialport") Serial Port
+            li 
+                a(href="/") Home
+        
+        fieldset
+            legend status
+            p(id="message")
+            input(id="logoutBtn", type="button", value="logout")
+          
+    #body
+        block content
+      
+    footer
+      p footer

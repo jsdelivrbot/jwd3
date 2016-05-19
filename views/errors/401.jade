@@ -1,0 +1,8 @@
+extends ../layout
+
+block content
+    h1 401 - unauthorized
+
+    input(id="csrftoken", type="hidden", value="#{csrftoken}")
+    //textarea(id="csrftoken", rows="1", cols="40")
+               | #{csrftoken}
