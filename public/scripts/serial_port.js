@@ -256,26 +256,26 @@ $(document).ready(function () {
                 //$.connection.hub.logging = true;
 
                 $.connection.hub.url = WCF_ADDRESS + '/signalr';
-                var answerHub = $.connection.answerHub;
+                var communicateHub = $.connection.communicateHub;
 
                 //get CNC answer
-                answerHub.client.sendAnswer = function(answer) {
+                communicateHub.client.sendAnswer = function(answer) {
                     drawMadePixel(answer);
                     console.info(JSON.stringify(answer));
                 };
 
                 //get port answer
-                answerHub.client.sendPortAnswer = function(answer) {
+                communicateHub.client.sendPortAnswer = function(answer) {
                     console.info("port answer: ", answer);
                 };
 
                 //on user connected
-                answerHub.client.onConnected = function(id) {
+                communicateHub.client.onConnected = function(id) {
                     console.info('on connected, id=', id);
                 };
 
                 //on user disconnected
-                answerHub.client.onDisconnected = function(id) {
+                communicateHub.client.onDisconnected = function(id) {
                     console.info('on disconnected, id=', id);
                 };
 
@@ -364,9 +364,8 @@ $(document).ready(function () {
 
             $.ajax({
                 type: 'POST',
-                url: WCF_ADDRESS + "/Service.svc/SetActive",
+                url: WCF_ADDRESS + "/Service.svc/Close",
                 dataType: "json",
-                data: { status: false },
                 crossDomain: true,
                 //cache: false,
                 async: true,
@@ -376,7 +375,6 @@ $(document).ready(function () {
                     setPortStatusCaption(isopen);
                     setSettingsEnable($('.port-setting'), isopen);
                     setSettingsEnable($('.cnc-setting'), isopen);
-                    //console.log("data sp2: ", result);
                 },
                 error: function (e) {
                     console.info('err in upl ', e);
@@ -386,11 +384,7 @@ $(document).ready(function () {
 
         //***SEND BYTES TO PORT
         $("#spSend").bind("click", function () {
-            //var ar = [];
-
             val = $('#spSendData').val();
-            //var arv = val.split(',');
-            //ar.push(val);
 
             var obj = {
                 data: val
@@ -406,29 +400,12 @@ $(document).ready(function () {
                 //cache: false,
                 async: true,
                 success: function (result) {
-                    //console.log("data sp2: ", result);
+
                 },
                 error: function (e) {
                     console.info('err in upl ', e);
                 }
             });
-
-            //$.ajax({
-            //    type: 'GET',
-            //    url: WCF_ADDRESS + "/Subscribe",
-            //    data: {id: 2},
-            //    dataType: "json",
-            //    contentType: 'application/javascript',
-            //    crossDomain: true,
-            //    cache: false,
-            //    async: true,
-            //    success: function (result) {
-            //        //console.log("data sp2: ", result);
-            //    },
-            //    error: function (e) {
-            //        console.info('err in upl ', e);
-            //    }
-            //});
         });
 
         //***SELECT IMAGE

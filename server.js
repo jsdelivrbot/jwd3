@@ -57,6 +57,7 @@ require("./routes/auth")(app, mongoose);
 require("./routes/index")(app);
 require("./routes/gridresult")(app, mongoose);
 require("./routes/serialport")(app, mongoose);
+require("./routes/serialport2")(app, mongoose);
 
 var server = http.createServer(app);
 
@@ -90,5 +91,3 @@ io.on('connection', function (socket) {
 server.listen(app.get("port"), function () {
     console.info("listen on port: " + app.get("port"));
 });
-
-//git test1

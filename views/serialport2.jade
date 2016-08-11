@@ -1,0 +1,26 @@
+extends layout
+
+block content
+    link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
+
+    section
+        hgroup
+            h1 serial port
+
+        fieldset
+            legend Port settings
+            p com port
+    
+        fieldset
+            legend CNC settings
+
+            table(id="cncGrid")
+            div(id="cncGridPager")
+
+            input(id="csrftoken", type="hidden", value="#{csrftoken}")
+            
+    script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
+    script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
+    script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
+    script(src="/scripts/port.js")
+    script(src="/scripts/cnc.js")
