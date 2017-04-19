@@ -15,7 +15,15 @@ module.exports = function (app, mongoose) {
         var userId = decoded.userId;
 
         //todo select by page.....
-        Journal.find({ }, 'note _id f_editing')
+        Journal.find({ }, 'note _id')
+            .exec(function (err, doc) {
+                res.send(doc);
+            });
+    });
+
+    //journal get data
+    app.get("/api/protected/journal_data", jwtauth.authenticate, function (req, res) {
+        Journal.find({ }, 'data')
             .exec(function (err, doc) {
                 res.send(doc);
             });
@@ -45,8 +53,7 @@ module.exports = function (app, mongoose) {
 
     //edit
     var edit = function (req, res) {
-        console.info('req.body ', req.body);
-        Journal.findOneAndUpdate({ _id: req.body.id }, { note: req.body.note, f_editing: false }, { upsert: true }, function (err, doc) {
+        Journal.findOneAndUpdate({ _id: req.body.id }, { note: req.body.note, data: req.body.data }, { upsert: true }, function (err, doc) {
             if (err)
                 return res.send(500, { error: err });
 
@@ -60,7 +67,7 @@ module.exports = function (app, mongoose) {
         var decoded = jwtauth.decode(token);
         var userId = decoded.userId;
 
-        var note = new Journal({ note: req.body.note, user: userId, f_editing: false });
+        var note = new Journal({ note: req.body.note, user: userId, data: req.body.data });
 
         note.save(function (err, doc) {
             return res.send('note succesfully added');

@@ -3,6 +3,14 @@ extends layout
 block content
     h1 home page
 
+    section
+        hgroup
+            h1 docs
+            
+        fieldset
+            legend docs
+
     input(id="_csrf", type="hidden", value="#{csrftoken}")
 
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
+    script(src="/scripts/docs.js")

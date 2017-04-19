@@ -20,14 +20,6 @@ app.use(bodyParser.json());//parsing post body
 //app.use(express.methodOverride());//put, delete, connect....
 app.use(express.urlencoded());
 
-//app.use(express.methodOverride());
-//app.use(function(req, res, next) {
-//    console.info('cors ');
-//     res.header('Access-Control-Allow-Origin', '*');
-//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content- Type, Accept');
-//     next();
-//});
-
 app.use(express.cookieParser());
 app.use(express.session({
     secret: "ggf54",
@@ -56,37 +48,8 @@ mongoose.connect(conf.settings.database_url);
 require("./routes/auth")(app, mongoose);
 require("./routes/index")(app);
 require("./routes/gridresult")(app, mongoose);
-require("./routes/serialport")(app, mongoose);
-require("./routes/serialport2")(app, mongoose);
 
 var server = http.createServer(app);
-
-//SOCKET
-var Journal = mongoose.model('Journal');
-var io = require("socket.io").listen(server);
-
-io.on('connection', function (socket) {
-
-    socket.on('connect', function () {
-        //socket.broadcast.emit('clients', { clients: Object.keys(io.connected).length });
-    });
-
-    socket.on('disconnect', function () {
-        //todo if user is disconnected and editing any notes -> endNoteEditing
-        socket.broadcast.emit('srvmesUserDisconnected', {});
-    });
-
-    socket.on('beginNoteEditing', function (msg) {
-        Journal.findOneAndUpdate({ _id: msg.rowid }, { f_editing: true }, { upsert: true }, function (err, doc) {
-            if (err)
-                console.info('err ', err);
-        });
-        socket.emit('srvmesBeginNoteEditing');
-    });
-    socket.on('endNoteEditing', function (msg) {
-        socket.emit('srvmesEndNoteEditing');
-    });
-});
 
 server.listen(app.get("port"), function () {
     console.info("listen on port: " + app.get("port"));

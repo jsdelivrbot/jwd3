@@ -15,12 +15,17 @@ block content
 
             input(id="csrftoken", type="hidden", value="#{csrftoken}")
 
-        input(id="testBtn", type="button", value="test button")
-        input(id="testBtn2", type="button", value="test button2")
+    section
+        hgroup
+            h1 doc
+            
+        fieldset
+            legend doc
+            
+            p(id="docName")
+            div(id="docContainer")
 
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
     script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
     script(src="/scripts/journal.js")
-
-    script(src='/socket.io/socket.io.js')
