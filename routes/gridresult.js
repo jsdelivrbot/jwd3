@@ -1,4 +1,5 @@
 var jwtauth = require("../lib/jwtauth");
+var fs = require('fs');
 //var Journal = require("../models/Journal");
 
 module.exports = function (app, mongoose) {
@@ -15,7 +16,7 @@ module.exports = function (app, mongoose) {
         var userId = decoded.userId;
 
         //todo select by page.....
-        Journal.find({ }, 'note _id')
+        Journal.find({}, 'note _id data')
             .exec(function (err, doc) {
                 res.send(doc);
             });
@@ -23,7 +24,7 @@ module.exports = function (app, mongoose) {
 
     //journal get data
     app.get("/api/protected/journal_data", jwtauth.authenticate, function (req, res) {
-        Journal.find({ }, 'data')
+        Journal.findOne({ _id: req.param('id') }, 'data')
             .exec(function (err, doc) {
                 res.send(doc);
             });
@@ -76,17 +77,27 @@ module.exports = function (app, mongoose) {
 
     //del
     var del = function (req, res) {
-        Journal.findOne({ _id: req.body.id }, function(err, doc){
-            doc.remove(function(err, doc){
+        Journal.findOne({ _id: req.body.id }, function (err, doc) {
+            doc.remove(function (err, doc) {
                 //todo
                 //console.info('err ', err);
                 //console.info('doc ', doc);    
             });
-            
+
         });
 
         //Journal.findByIdAndRemove(req.body.id, function(err, doc) {
         //});
         res.send('note succesfully deleted');
     };
+
+    /////////////////////////test
+    //app.post('/my/pdf', function (req, res) {
+    //    var filePath = "/trtyt.pdf";
+        //console.info("__dirname:", __dirname);
+    //    fs.readFile(__dirname + filePath, function (err, data) {
+    //        res.contentType("application/pdf");
+    //        res.send(data);
+    //    });
+    //});
 };

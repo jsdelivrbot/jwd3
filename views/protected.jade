@@ -5,6 +5,31 @@ block content
     
     section
         hgroup
+            h1 Docs tree
+        fieldset
+            legend Docs tree
+
+            table(id="docTree")
+                //caption fcvcv
+                thead
+                    tr
+                        th Имя
+                        th Файл
+                tbody
+                    tr(data-tt-id="1")
+                        td dgc12
+                        td d43
+                    tr(data-tt-id="1.1", data-tt-parent-id="1")
+                        td cv
+                        td vhfgh
+                    tr(data-tt-id="58f74543b396f40819000001")
+                        td klklgf
+                        td vcvcv
+                    tr(data-tt-id="bvbcv", data-tt-parent-id="58f74543b396f40819000001")
+                        td cv
+                        td gfgdfgdfgdf
+    section
+        hgroup
             h1 journal
             
         fieldset
@@ -22,10 +47,18 @@ block content
         fieldset
             legend doc
             
-            p(id="docName")
             div(id="docContainer")
 
+            canvas(id="pdfCanvas")
+
+    link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
+    link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
     script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
+    //script(src="https://mozilla.github.io/pdf.js/build/pdf.js")
+    script(src="/libs/jquery-treetable/jquery.treetable.js")
+    script(src="/libs/pdfjs/build/pdf.js")
     script(src="/scripts/journal.js")
+
+    
