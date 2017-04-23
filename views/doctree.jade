@@ -1,8 +1,6 @@
 extends layout
 
 block content
-    link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
-    
     section
         hgroup
             h1 Docs tree
@@ -10,24 +8,22 @@ block content
             legend Docs tree
 
             table(id="docTree")
-                //caption fcvcv
                 thead
                     tr
                         th Имя
                         th Файл
-                tbody
-                    tr(data-tt-id="1")
-                        td dgc12
-                        td d43
-                    tr(data-tt-id="1.1", data-tt-parent-id="1")
-                        td cv
-                        td vhfgh
-                    tr(data-tt-id="58f74543b396f40819000001")
-                        td klklgf
-                        td vcvcv
-                    tr(data-tt-id="bvbcv", data-tt-parent-id="58f74543b396f40819000001")
-                        td cv
-                        td gfgdfgdfgdf
+                        th(style="display: none") Имя файла в базе
+
+            form(id="uploadForm", enctype="multipart/form-data", action="/api/protected/journal/upload", method="post")
+                div(hidden)
+                    input(type="file", name="doc", id="hiddenSelectFile", accept=".pdf, .html")
+                    input(type="submit", name="submit", value="upload doc")
+                    input(id="parentId", type="text", name="parentId")
+
+                input(id="addDoc", type="button", value="+")
+                input(id="delDoc", type="button", value="-")
+                span(id = "status")
+
     section
         hgroup
             h1 journal
@@ -42,23 +38,30 @@ block content
 
     section
         hgroup
-            h1 doc
+            h1 doc tree
             
         fieldset
-            legend doc
+            legend doc tree
             
             div(id="docContainer")
 
             canvas(id="pdfCanvas")
 
+            div(class="annotationLayer")
+
     link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
     link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
-    script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
+    //script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
+    script(src="/libs/jquery.form/jquery.form.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
+
+    //script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js")
     //script(src="https://mozilla.github.io/pdf.js/build/pdf.js")
     script(src="/libs/jquery-treetable/jquery.treetable.js")
     script(src="/libs/pdfjs/build/pdf.js")
+    script(src="/libs/pdfjs/pdfjs-ui-utils.js")
+
     script(src="/scripts/journal.js")
 
     

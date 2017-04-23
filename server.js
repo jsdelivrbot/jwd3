@@ -10,6 +10,8 @@ var cors = require("cors");
 
 var app = express();
 
+
+
 //app.use(express.logger());
 app.set('port', process.env.PORT || 8000);
 app.set("views", __dirname + "/views");
