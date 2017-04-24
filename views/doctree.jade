@@ -7,12 +7,13 @@ block content
         fieldset
             legend Docs tree
 
-            table(id="docTree")
-                thead
-                    tr
-                        th Имя
-                        th Файл
-                        th(style="display: none") Имя файла в базе
+            div(id="doctreeContainer")
+                //table(id="docTree")
+                    thead
+                        tr
+                            th Имя
+                            th Файл
+                            th(style="display: none") Имя файла в базе
 
             form(id="uploadForm", enctype="multipart/form-data", action="/api/protected/journal/upload", method="post")
                 div(hidden)
@@ -24,17 +25,8 @@ block content
                 input(id="delDoc", type="button", value="-")
                 span(id = "status")
 
-    section
-        hgroup
-            h1 journal
-            
-        fieldset
-            legend journal
 
-            table(id="noteGrid")
-            div(id="notePager")
-
-            input(id="csrftoken", type="hidden", value="#{csrftoken}")
+    input(id="csrftoken", type="hidden", value="#{csrftoken}")
 
     section
         hgroup
@@ -43,12 +35,14 @@ block content
         fieldset
             legend doc tree
             
+            div(id="pdfPage")
             div(id="docContainer", class="pdf-content")
                 canvas(id="pdfCanvas")
-                div(class="annotationLayer")
+                div(id="ldiv")
 
     link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
     link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
+    link(rel="stylesheet", href="libs/simplePagination/simplePagination.css")
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
     //script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
     script(src="/libs/jquery.form/jquery.form.js")
@@ -59,6 +53,7 @@ block content
     script(src="/libs/jquery-treetable/jquery.treetable.js")
     script(src="/libs/pdfjs/build/pdf.js")
     script(src="/libs/pdfjs/pdfjs-ui-utils.js")
+    script(src="/libs/simplePagination/jquery.simplePagination.js ")
 
     script(src="/scripts/journal.js")
 

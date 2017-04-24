@@ -1,11 +1,11 @@
 .pdf-content {
     border: 1px solid #000000;
 }
-.annotationLayer > a {
+.annotLayer > a {
     display: block;
     position: absolute;
 }
-.annotationLayer > a:hover {
+.annotLayer > a:hover {
     opacity: 0.2;
     background: #ff0;
     box-shadow: 0px 2px 10px #ff0;

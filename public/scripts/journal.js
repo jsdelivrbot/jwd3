@@ -3,11 +3,6 @@ $(document).ready(function () {
     var rowidBuf;
     var docContainerName = 'docContainer';
 
-    //LOAD DATA TO TREE
-    var reloadTree = function (settings) {
-
-    };
-
     var loadDocData = function () {
         $.ajax({
             type: "POST",
@@ -16,7 +11,6 @@ $(document).ready(function () {
             success: function (data, textStatus, jqXHR) {
                 var doc = data.doc;
                 treeSettings(doc);
-                //fillTree(doc);
             },
             error: function (jqXHR, textStatus, error) {
                 console.info("err", error);
@@ -28,23 +22,33 @@ $(document).ready(function () {
     loadDocData();
 
     var fillTree = function (doc) {
-        var text = '<tbody>';
+        var tableText = '<table id="docTree">';
+        tableText += '<thead><tr>';
+        tableText += '<th>Имя</th>';
+        tableText += '<th>Файл</th>';
+        tableText += '<th style="display: none">Имя файла в базе</th>';
+        tableText += '</tr></thead>';
 
-        text += '<tr data-tt-id="000000000000000000000001">';
-        text += '<td>root</td>';
-        text += '<td></td>';
-        text += '<td></td>';
-        text += '</tr>';
+        var bodytext = '<tbody>';
+
+        bodytext += '<tr data-tt-id="000000000000000000000001">';
+        bodytext += '<td>root</td>';
+        bodytext += '<td></td>';
+        bodytext += '<td></td>';
+        bodytext += '</tr>';
 
         for (var x = 0; x < doc.length; x++) {
-            text += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id + '">';
-            text += '<td>' + doc[x].name + '</td>';
-            text += '<td>' + doc[x].originalFileName + '</td>';
-            text += '<td class="fileName" style="display: none">' + doc[x].fileName + '</td>';
-            text += '</tr>'
+            bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id + '">';
+            bodytext += '<td>' + doc[x].name + '</td>';
+            bodytext += '<td>' + doc[x].originalFileName + '</td>';
+            bodytext += '<td class="fileName" style="display: none">' + doc[x].fileName + '</td>';
+            bodytext += '</tr>'
         }
-        text += '</tbody>';
-        $('#docTree thead').after(text);
+        bodytext += '</tbody></table>';
+        tableText += bodytext;
+
+        $('#doctreeContainer').after(tableText);
+        //$('#docTree thead').after(tableText);
     };
 
     var treeSettings = function (doc) {
@@ -71,53 +75,6 @@ $(document).ready(function () {
     };
 
     //DOC
-    
-
-    function setupAnnotations(page, viewport, canvas, $annotationLayerDiv) {
-        var canvasOffset = $(canvas).offset();
-        var promise = page.getAnnotations().then(function (annotationsData) {
-            viewport = viewport.clone({
-            dontFlip: true
-        });
-
-        for (var i = 0; i < annotationsData.length; i++) {
-            var data = annotationsData[i];
-            var annotation = PDFJS.Annotation.fromData(data);
-            if (!annotation || !annotation.hasHtml()) {
-                continue;
-            }
-
-            var element = annotation.getHtmlElement(page.commonObjs);
-            data = annotation.getData();
-            var rect = data.rect;
-            var view = page.view;
-
-            rect = PDFJS.Util.normalizeRect([rect[0], view[3] - rect[1] + view[1], rect[2], view[3] - rect[3] + view[1]]);
-
-            element.style.left = (canvasOffset.left + rect[0]) + 'px';
-            element.style.top = (canvasOffset.top + rect[1]) + 'px';
-            element.style.position = 'absolute';
-
-            var transform = viewport.transform;
-            var transformStr = 'matrix(' + transform.join(',') + ')';
-
-            CustomStyle.setProp('transform', element, transformStr);
-
-            var transformOriginStr = -rect[0] + 'px ' + -rect[1] + 'px';
-            CustomStyle.setProp('transformOrigin', element, transformOriginStr);
-
-            if (data.subtype === 'Link' && !data.url) {
-            // In this example,  I do not handle the `Link` annotations without url.
-            // If you want to handle those annotations, see `web/page_view.js`.
-                continue;
-            }
-
-            $annotationLayerDiv.append(element);
-        }
-    });
-    return promise;
-  }
-
     //upload(add file)
     $('#addDoc').bind('click', function () {
         var $tr = $('#docTree tr.selected');
@@ -126,21 +83,25 @@ $(document).ready(function () {
             console.info('not selected');
             return;
         }
-        $('#parentId').val($tr.attr('data-tt-id'));
+
+        var id = $tr.attr('data-tt-id');
+
+        $('#parentId').val(id);
         $('#hiddenSelectFile').click();
     });
 
     //delete file
     $('#delDoc').bind('click', function () {
-        var id = $('#docTree tr.selected').attr('data-tt-id');
+        var $tr = $('#docTree tr.selected');
 
-        //var fileName = $('#docTree tr.selected').find('td.fileName').html();
-        console.info(', ');
-
-        if (!id || id == "") {
+        if ($tr.length == 0) {
             console.info('not selected');
             return;
         }
+
+        var id = $tr.attr('data-tt-id');
+        var fileName = $tr.find('td.fileName').html();
+        console.info(', ', id, ',   ', fileName);
 
         /*$.ajax({
         type: "POST",
@@ -173,6 +134,9 @@ $(document).ready(function () {
             },
             success: function (response) {
                 $("#status").empty().text(response.toString());
+
+                $('#docTree tbody').remove();
+                loadDocData();
             }
         });
         return false;
