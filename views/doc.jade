@@ -9,14 +9,11 @@ block content
             
         fieldset
             legend doc
-            
             input(id="docName", type="hidden", value="#{docName}")
 
-            div(id="docContainer")
-
-            canvas(id="pdfCanvas")
-
-            div(class="annotationLayer")
+            div(id="docContainer", class="pdf-content")
+                canvas(id="pdfCanvas")
+                div(class="annotationLayer")
 
     link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
     link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
@@ -24,8 +21,17 @@ block content
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
 
     script(src="/libs/jquery-treetable/jquery.treetable.js")
-    script(src="/libs/pdfjs/build/pdf.js")
+    //script(src="/libs/pdfjs/build/pdf.js")
+    //script(src="/scripts/pdf1.js")
     script(src="/libs/pdfjs/pdfjs-ui-utils.js")
+    
+
+
+    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/web/compatibility.js")
+    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/build/pdf.combined.js")
+    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/web/pdf_viewer.js")
+    //link(rel="stylesheet", href="https://rawgit.com/mozilla/pdfjs-dist/master/web/pdf_viewer.css")
+
 
     script(src="/scripts/journal.js")
     script(src="/scripts/doc.js")

@@ -48,6 +48,7 @@ module.exports = function (app, mongoose) {
             });
     });
 
+    //отображение документа
     app.get(/doc-\d+$/, jwtauth.authenticate, function (req, res) {
         var docName = req.originalUrl.substring(1, req.originalUrl.length);
 
