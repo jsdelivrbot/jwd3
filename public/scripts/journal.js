@@ -18,7 +18,6 @@ $(document).ready(function () {
         });
     };
 
-    //treeSettings(doc);
     loadDocData();
 
     var fillTree = function (doc) {
@@ -31,12 +30,6 @@ $(document).ready(function () {
 
         var bodytext = '<tbody>';
 
-        bodytext += '<tr data-tt-id="000000000000000000000001">';
-        bodytext += '<td>root</td>';
-        bodytext += '<td></td>';
-        bodytext += '<td></td>';
-        bodytext += '</tr>';
-
         for (var x = 0; x < doc.length; x++) {
             bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id + '">';
             bodytext += '<td>' + doc[x].name + '</td>';
@@ -47,8 +40,7 @@ $(document).ready(function () {
         bodytext += '</tbody></table>';
         tableText += bodytext;
 
-        $('#doctreeContainer').after(tableText);
-        //$('#docTree thead').after(tableText);
+        $('#doctreeContainer').append(tableText);
     };
 
     var treeSettings = function (doc) {
@@ -57,7 +49,10 @@ $(document).ready(function () {
         //tree
         $('#docTree').treetable({
             expandable: true,
-            initialState: 'expanded'
+            initialState: 'collapsed',
+            onNodeExpand: function () { 
+                //
+            }
         });
 
         // highlight selected row
@@ -69,7 +64,7 @@ $(document).ready(function () {
         //double click
         $('#docTree tr').dblclick(function () {
             var name = $(this).find('td.fileName').html();
-            docView(name);
+            docView(name); //utils.js
         });
 
     };
@@ -101,24 +96,25 @@ $(document).ready(function () {
 
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.find('td.fileName').html();
-        console.info(', ', id, ',   ', fileName);
 
-        /*$.ajax({
-        type: "POST",
-        dataType: "JSON",
-        data: {
-        id: id
-        },
-        url: "/api/protected/journal/del",
-        success: function (data, textStatus, jqXHR) {
-        console.info('del: ', data);
-        },
-        error: function (jqXHR, textStatus, error) {
-        console.info("err", error);
-        }
-        });*/
+        $.ajax({
+            type: "POST",
+            dataType: "JSON",
+            data: {
+                id: id,
+                fileName: fileName
+            },
+            url: "/api/protected/journal/del",
+            success: function (data, textStatus, jqXHR) {
+                $("#status").empty().text(data.message);
 
-        //$('#docTree tbody').remove();
+                $('#docTree').remove();
+                loadDocData();
+            },
+            error: function (jqXHR, textStatus, error) {
+                console.info("err", error);
+            }
+        });
     });
 
     $('#hiddenSelectFile').on('change', function () {
@@ -135,7 +131,7 @@ $(document).ready(function () {
             success: function (response) {
                 $("#status").empty().text(response.toString());
 
-                $('#docTree tbody').remove();
+                $('#docTree').remove();
                 loadDocData();
             }
         });

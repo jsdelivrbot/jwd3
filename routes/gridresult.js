@@ -48,6 +48,20 @@ module.exports = function (app, mongoose) {
             });
     });
 
+    //get doc by parent
+    app.post("/api/doc_by_parent", jwtauth.authenticate, function (req, res) {
+        var token = req.cookies.token;
+        var decoded = jwtauth.decode(token);
+        var userId = decoded.userId;
+
+        Journal.find({'parent_id': req.body.parentId}, 'name _id fileName originalFileName data parent_id')
+            .exec(function (err, data) {
+                res.send({
+                    doc: data
+                });
+            });
+    });
+
     //отображение документа
     app.get(/doc-\d+$/, jwtauth.authenticate, function (req, res) {
         var docName = req.originalUrl.substring(1, req.originalUrl.length);
@@ -79,37 +93,6 @@ module.exports = function (app, mongoose) {
             });
     });
 
-    //journal editing
-    app.post("/api/protected/journal", jwtauth.authenticate, function (req, res) {
-        var oper = req.body.oper;
-
-        if (!oper)
-            return;
-        switch (oper) {
-            case 'edit':
-                edit(req, res);
-                break;
-            case 'add':
-                add(req, res);
-                break;
-            case 'del':
-                del(req, res);
-                break;
-            default:
-                break;
-        }
-    });
-
-    //edit
-    var edit = function (req, res) {
-        Journal.findOneAndUpdate({ _id: req.body.id }, { name: req.body.name, data: req.body.data }, { upsert: true }, function (err, doc) {
-            if (err)
-                return res.send(500, { error: err });
-
-            return res.send('note succesfully updated');
-        });
-    };
-
     //add into db
     var addDb = function (req, res) {
         //console.log(req.file);//filename
@@ -127,13 +110,11 @@ module.exports = function (app, mongoose) {
             parent_id: req.body.parentId
         });
 
-        doc.save(); //function (err, doc) {
-        //return res.send('note succesfully added');
-        //});
+        doc.save();
     };
 
-    //del
-    var del = function (req, res) {
+    //del from db
+    var delFromDb = function (req, res) {
         Journal.findOne({ _id: req.body.id }, function (err, doc) {
             doc.remove(function (err, doc) {
                 //todo
@@ -149,7 +130,7 @@ module.exports = function (app, mongoose) {
     };
 
     //TODO jwtauth.authenticate не работает
-    app.post('/api/protected/journal/upload', /*upload.single('doc'),*/function (req, res, next) {
+    app.post('/api/protected/journal/upload', function (req, res, next) {
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 return
@@ -168,9 +149,8 @@ module.exports = function (app, mongoose) {
             doc.remove(function (err, doc) {
 
             });
-
         });
 
-        res.end("File is deleted");
+        res.send({ message: "File is deleted" });
     });
 };
