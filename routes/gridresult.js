@@ -2,6 +2,7 @@ var jwtauth = require("../lib/jwtauth");
 var fs = require('fs');
 var path = require('path');
 var multer = require('multer');
+var _ = require("../lib/underscore/underscore.js");
 
 module.exports = function (app, mongoose) {
 
@@ -40,26 +41,38 @@ module.exports = function (app, mongoose) {
         var decoded = jwtauth.decode(token);
         var userId = decoded.userId;
 
-        Journal.find({}, 'name _id fileName originalFileName data parent_id')
-            .exec(function (err, data) {
-                res.send({
-                    doc: data
-                });
-            });
-    });
+        Journal.find({}, function (err, docs) {
+            //TODO оптимизировать
 
-    //get doc by parent
-    app.post("/api/doc_by_parent", jwtauth.authenticate, function (req, res) {
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
-        var userId = decoded.userId;
-
-        Journal.find({'parent_id': req.body.parentId}, 'name _id fileName originalFileName data parent_id')
-            .exec(function (err, data) {
-                res.send({
-                    doc: data
+            var queue = [];
+            var currentNode;
+            var getChildren = function (parent_id) {
+                var children = _.filter(docs, function (item) {
+                    var isEquals = new String(item['parent_id']).valueOf() == new String(parent_id).valueOf();
+                    return isEquals;
                 });
+
+                return children;
+            };
+
+            //root
+            var root = _.find(docs, function (item) {
+                return item['parent_id'] === null;
             });
+            queue.push(root);
+
+            //children
+            var getRecursive = function (node) {
+                var children = getChildren(node['_id']);
+                for (var x = 0; x < children.length; x++) {
+                    queue.push(children[x]);
+                    getRecursive(children[x]);
+                }
+            };
+            getRecursive(root);
+
+            res.send({ doc: queue });
+        });
     });
 
     //отображение документа
@@ -93,50 +106,28 @@ module.exports = function (app, mongoose) {
             });
     });
 
-    //add into db
-    var addDb = function (req, res) {
-        //console.log(req.file);//filename
-        var file = req.file;
-
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
-        var userId = decoded.userId;
-
-        var doc = new Journal({
-            name: file.originalname,
-            user: userId,
-            fileName: file.filename,
-            originalFileName: file.originalname,
-            parent_id: req.body.parentId
-        });
-
-        doc.save();
-    };
-
-    //del from db
-    var delFromDb = function (req, res) {
-        Journal.findOne({ _id: req.body.id }, function (err, doc) {
-            doc.remove(function (err, doc) {
-                //todo
-                //console.info('err ', err);
-                //console.info('doc ', doc);    
-            });
-
-        });
-
-        //Journal.findByIdAndRemove(req.body.id, function(err, doc) {
-        //});
-        res.send('note succesfully deleted');
-    };
-
     //TODO jwtauth.authenticate не работает
     app.post('/api/protected/journal/upload', function (req, res, next) {
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 return
             }
+
             //save into db
-            addDb(req, res);
+            var file = req.file;
+            var token = req.cookies.token;
+            var decoded = jwtauth.decode(token);
+            var userId = decoded.userId;
+
+            var doc = new Journal({
+                name: file.originalname,
+                user: userId,
+                fileName: file.filename,
+                originalFileName: file.originalname,
+                parent_id: req.body.parentId
+            });
+
+            doc.save();
         });
 
         res.setHeader("Content-type", "text/html");
@@ -147,7 +138,16 @@ module.exports = function (app, mongoose) {
     app.post('/api/protected/journal/del', function (req, res, next) {
         Journal.findOne({ _id: req.body.id }, function (err, doc) {
             doc.remove(function (err, doc) {
+                var fileName = req.body.fileName;
+                fs.exists('./public/uploads/' + fileName, function (exists) {
+                    if (exists) {
+                        console.log('file deleted');
+                        fs.unlink('./public/uploads/' + fileName);
+                    } else {
+                        console.log('file not exists');
+                    }
 
+                });
             });
         });
 

@@ -29,11 +29,15 @@ $(document).ready(function () {
         tableText += '</tr></thead>';
 
         var bodytext = '<tbody>';
+        var tmp = "";
 
         for (var x = 0; x < doc.length; x++) {
             bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id + '">';
             bodytext += '<td>' + doc[x].name + '</td>';
-            bodytext += '<td>' + doc[x].originalFileName + '</td>';
+
+            tmp = (doc[x].fileName === undefined) ? "" : ' href="' + doc[x].fileName + '"';
+
+            bodytext += '<td><a' + tmp + '>' + doc[x].originalFileName + '</a></td>';
             bodytext += '<td class="fileName" style="display: none">' + doc[x].fileName + '</td>';
             bodytext += '</tr>'
         }
@@ -49,8 +53,8 @@ $(document).ready(function () {
         //tree
         $('#docTree').treetable({
             expandable: true,
-            initialState: 'collapsed',
-            onNodeExpand: function () { 
+            initialState: 'expanded',
+            onNodeExpand: function () {
                 //
             }
         });
@@ -97,24 +101,51 @@ $(document).ready(function () {
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.find('td.fileName').html();
 
-        $.ajax({
-            type: "POST",
-            dataType: "JSON",
-            data: {
-                id: id,
-                fileName: fileName
-            },
-            url: "/api/protected/journal/del",
-            success: function (data, textStatus, jqXHR) {
-                $("#status").empty().text(data.message);
+        var ajaxDel = function (cb) {
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                data: {
+                    id: id,
+                    fileName: fileName
+                },
+                url: "/api/protected/journal/del",
+                success: function (data, textStatus, jqXHR) {
+                    $("#status").empty().text(data.message);
 
-                $('#docTree').remove();
-                loadDocData();
-            },
-            error: function (jqXHR, textStatus, error) {
-                console.info("err", error);
-            }
+                    $('#docTree').remove();
+                    loadDocData();
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.info("err", error);
+                },
+                complete: function () {
+                    if (cb) {
+                        cb();
+                    }
+                }
+            });
+        };
+
+        swal({
+            title: "Удалить файл?",
+            //text: name,
+            type: "info",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+        },
+        function () {
+            setTimeout(function () {
+                ajaxDel(function () {
+                    swal("Файл удален");
+                });
+            }, 500);
         });
+
+        return;
+
+
     });
 
     $('#hiddenSelectFile').on('change', function () {

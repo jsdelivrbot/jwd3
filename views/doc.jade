@@ -11,33 +11,18 @@ block content
             legend doc
             input(id="docName", type="hidden", value="#{docName}")
 
-            //input(id="selectPdfPageNumber", type="number")
-            //input(id="pdfTotalPages", type="number")
-
             div(id="pdfPage")
             div(id="docContainer", class="pdf-content")
                 canvas(id="pdfCanvas")
                 div(id="ldiv")
 
-    //link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
-    //link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
     link(rel="stylesheet", href="/stylesheets/doctree.css")
-    link(rel="stylesheet", href="libs/simplePagination/simplePagination.css")
+    link(rel="stylesheet", href="/libs/simplePagination/simplePagination.css")
 
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
-
     script(src="/libs/jquery-treetable/jquery.treetable.js")
-    //script(src="/libs/pdfjs/build/pdf.js")
-    //script(src="/scripts/pdf1.js")
     script(src="/libs/pdfjs/pdfjs-ui-utils.js")
     script(src="/libs/simplePagination/jquery.simplePagination.js ")
-
-    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/web/compatibility.js")
-    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/build/pdf.combined.js")
-    //script(src="https://rawgit.com/mozilla/pdfjs-dist/master/web/pdf_viewer.js")
-    //link(rel="stylesheet", href="https://rawgit.com/mozilla/pdfjs-dist/master/web/pdf_viewer.css")
-
-
     script(src="/scripts/journal.js")
     script(src="/scripts/doc.js")
