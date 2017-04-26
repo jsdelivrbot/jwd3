@@ -15,9 +15,10 @@ block content
                     input(type="submit", name="submit", value="upload doc")
                     input(id="parentId", type="text", name="parentId")
                 
-                - if (roles.indexOf('admin')) {
-                    input(id="addDoc", type="button", value="+")
-                    input(id="delDoc", type="button", value="-")
+                -if ( roles && roles.indexOf("admin") !== -1 ) {
+                    input(id="addFolderDoc", type="button", value="add folder")
+                    input(id="addDoc", type="button", value="add doc")
+                    input(id="delDoc", type="button", value="del doc")
                 - }
                 input(id="downloadDoc", type="button", value="download")
                 span(id = "status")

@@ -32,6 +32,21 @@
         return res;
     };
 
+    function convertDate(date) {
+      var yyyy = date.getFullYear().toString();
+      var mm = (date.getMonth()+1).toString();
+      var dd  = date.getDate().toString();
+      var hh = date.getHours().toString();
+      var mi = date.getMinutes().toString();
+      var ss = date.getSeconds().toString();
+
+      var mmChars = mm.split('');
+      var ddChars = dd.split('');
+
+      return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]) +
+        ' ' + hh + ':' + mi + ':' + ss;
+    }
+
     var docView = function (name) {
         if (!name || name === "") {
             return;

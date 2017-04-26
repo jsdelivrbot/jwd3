@@ -9,7 +9,8 @@ module.exports = function (mongoose) {
         },
         hash: String,
         salt: String,
-        roles: Array
+        roles: Array,
+        createDate: Date
     });
     var User = mongoose.model('User', userSchema);
 

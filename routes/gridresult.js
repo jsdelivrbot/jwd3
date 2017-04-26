@@ -34,9 +34,10 @@ module.exports = function (app, mongoose) {
     app.get("/doctree", jwtauth.authenticate, function (req, res) {
         var token = req.cookies.token;
         var decoded = jwtauth.decode(token);
+        var roles = decoded.roles;
 
         res.render("doctree", {
-            roles: decoded.roles
+            roles: roles
         });
     });
 
@@ -49,17 +50,17 @@ module.exports = function (app, mongoose) {
         var root = {
             _id: '000000000000000000000001',
             name: 'root',
-            parent_id: null
+            parent: null,
+            isFolder: true
         };
 
-        Journal.find({}, function (err, docs) {
+        Journal.find({}).populate('user').exec(function (err, docs) {
             //TODO оптимизировать
-
             var queue = [];
             var currentNode;
             var getChildren = function (parent_id) {
                 var children = _.filter(docs, function (item) {
-                    var isEquals = new String(item['parent_id']).valueOf() == new String(parent_id).valueOf();
+                    var isEquals = new String(item['parent']).valueOf() == new String(parent_id).valueOf();
                     return isEquals;
                 });
 
@@ -76,6 +77,7 @@ module.exports = function (app, mongoose) {
                     getRecursive(children[x]);
                 }
             };
+
             getRecursive(root);
 
             res.send({ doc: queue });
@@ -131,7 +133,9 @@ module.exports = function (app, mongoose) {
                 user: userId,
                 fileName: file.filename,
                 originalFileName: file.originalname,
-                parent_id: req.body.parentId
+                parent: req.body.parentId,
+                createDate: new Date(),
+                isFolder: false
             });
 
             doc.save();
@@ -159,5 +163,23 @@ module.exports = function (app, mongoose) {
         });
 
         res.send({ message: "File is deleted" });
+    });
+
+    //ad doc folder
+    app.post('/api/protected/journal/add_folder', function (req, res, next) {
+        var token = req.cookies.token;
+        var decoded = jwtauth.decode(token);
+        var userId = decoded.userId;
+
+        var doc = new Journal({
+            name: req.body.name,
+            user: userId,
+            parent: req.body.parent_id,
+            createDate: new Date(),
+            isFolder: true
+        });
+        doc.save();
+
+        res.send({ message: "Folder is added" });
     });
 };

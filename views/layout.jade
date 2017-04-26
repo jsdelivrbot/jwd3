@@ -23,6 +23,11 @@ html
     block head
   body   
     header jwd nodejs server
+
+        div
+            input(id="logoutBtn", type="button", value="logout", style="float: right; margin-left: 10px")
+            //a(style="float: right") Вход выполнен: 
+
         ul
             li 
                 a(href="/register") Регистрация
@@ -36,7 +41,6 @@ html
         fieldset
             legend status
             p(id="message")
-            input(id="logoutBtn", type="button", value="logout")
           
     #body
         block content

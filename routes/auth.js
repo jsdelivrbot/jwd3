@@ -27,7 +27,8 @@ module.exports = function (app, mongoose) {
                 email: login,
                 hash: hash, // + salt,//todo
                 salt: salt,
-                roles: ["user"]
+                roles: ["user"],
+                createDate: new Date()
             });
             user.save(function (e, doc) {
                 if (e) {

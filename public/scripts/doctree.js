@@ -25,24 +25,43 @@ $(document).ready(function () {
         tableText += '<thead><tr>';
         tableText += '<th>Имя</th>';
         tableText += '<th>Ссылка</th>';
+        tableText += '<th>Дата загрузки</th>';
+        tableText += '<th>Добавил</th>';
         tableText += '<th style="display: none">Имя файла в базе</th>';
         tableText += '</tr></thead>';
 
         var bodytext = '<tbody>';
-        var tmp = "";
+        var tmp = '';
+        var currentDoc;
 
         for (var x = 0; x < doc.length; x++) {
-            bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id +
-                '" data-originalname="' + doc[x].originalFileName + '">';
-            bodytext += '<td>' + doc[x].name + '</td>';
+            currentDoc = doc[x];
+            bodytext += '<tr data-tt-id="' + currentDoc._id +
+                '" data-tt-parent-id="' + currentDoc.parent +
+                '" data-originalname="' + currentDoc.originalFileName +
+                '" data-is-folder="' + currentDoc.isFolder +
+                '">';
 
-            //if (doc[x].fileName === undefined) {
-            //    tmp = "";
-            //}
-            tmp = (doc[x].fileName === undefined) ? "" : ' href="' + doc[x].fileName + '"';
+            if (currentDoc['isFolder'] === true)
+                tmp = '<span class="folder"></span>'
+            else
+                tmp = '<span class="file"></span>';
 
-            bodytext += '<td><a' + tmp + '>' + doc[x].fileName + '</a></td>';
-            bodytext += '<td class="fileName" style="display: none">' + doc[x].fileName + '</td>';
+            bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
+
+            tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
+            tmp += '>';
+            tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
+            bodytext += '<td><a' + tmp + '</a></td>';
+
+            tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
+            bodytext += '<td><p>' + tmp + '</p></td>';
+
+            tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
+            bodytext += '<td><p>' + tmp + '</p></td>';
+
+
+            bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
             bodytext += '</tr>'
         }
         bodytext += '</tbody></table>';
@@ -73,7 +92,7 @@ $(document).ready(function () {
         $('#docTree tr').dblclick(function () {
             var name = $(this).find('td.fileName').html();
 
-            if (name !== undefined && name !== "")
+            if (name != "undefined" && name !== "")
                 docView(name); //utils.js
         });
 
@@ -91,9 +110,78 @@ $(document).ready(function () {
         }
 
         var id = $tr.attr('data-tt-id');
+        var isFolder = $tr.attr('data-is-folder');
+
+        if (isFolder === "false") {
+            swal('Выберите папку');
+            return;
+        }
 
         $('#parentId').val(id);
         $('#hiddenSelectFile').click();
+    });
+
+    //add folder
+    $('#addFolderDoc').bind('click', function () {
+        //recursive del?
+        var $tr = $('#docTree tr.selected');
+        var isFolder = $tr.attr('data-is-folder');
+
+        if (isFolder === "false") {
+            swal('Выберите папку');
+            return;
+        }
+
+        var addFolder = function (parent_id, name) {
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                data: {
+                    parent_id: parent_id,
+                    name: name
+                },
+                url: "/api/protected/journal/add_folder",
+                success: function (data, textStatus, jqXHR) {
+                    $("#status").empty().text(data.message);
+
+                    $('#docTree').remove();
+                    loadDocData();
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.info("err", error);
+                }
+            });
+        }
+
+        if ($tr.length == 0) {
+            console.info('not selected');
+            swal("Выберите куда добавлять");
+            return;
+        };
+
+        swal({
+            title: "Название папки",
+            //text: "Write something interesting:",
+            type: "input",
+            showCancelButton: true,
+            closeOnConfirm: true,
+            animation: "slide-from-top",
+            inputPlaceholder: "Название папки"
+        },
+        function (inputValue) {
+            if (inputValue === false)
+                return false;
+
+            if (inputValue === "") {
+                swal.showInputError("Введите название папки");
+                return false;
+            };
+
+            var parent_id = $tr.attr('data-tt-id');
+            addFolder(parent_id, inputValue);
+        });
+
+        return false;
     });
 
     //delete file
@@ -108,6 +196,7 @@ $(document).ready(function () {
 
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.find('td.fileName').html();
+
 
         var ajaxDel = function (cb) {
             $.ajax({
