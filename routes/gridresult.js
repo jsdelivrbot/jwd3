@@ -32,7 +32,12 @@ module.exports = function (app, mongoose) {
     var Journal = require("../models/Journal")(mongoose);
 
     app.get("/doctree", jwtauth.authenticate, function (req, res) {
-        res.render("doctree");
+        var token = req.cookies.token;
+        var decoded = jwtauth.decode(token);
+
+        res.render("doctree", {
+            roles: decoded.roles
+        });
     });
 
     //get doc
@@ -40,6 +45,12 @@ module.exports = function (app, mongoose) {
         var token = req.cookies.token;
         var decoded = jwtauth.decode(token);
         var userId = decoded.userId;
+
+        var root = {
+            _id: '000000000000000000000001',
+            name: 'root',
+            parent_id: null
+        };
 
         Journal.find({}, function (err, docs) {
             //TODO оптимизировать
@@ -55,10 +66,6 @@ module.exports = function (app, mongoose) {
                 return children;
             };
 
-            //root
-            var root = _.find(docs, function (item) {
-                return item['parent_id'] === null;
-            });
             queue.push(root);
 
             //children

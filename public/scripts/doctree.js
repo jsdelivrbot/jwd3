@@ -24,7 +24,7 @@ $(document).ready(function () {
         var tableText = '<table id="docTree">';
         tableText += '<thead><tr>';
         tableText += '<th>Имя</th>';
-        tableText += '<th>Файл</th>';
+        tableText += '<th>Ссылка</th>';
         tableText += '<th style="display: none">Имя файла в базе</th>';
         tableText += '</tr></thead>';
 
@@ -32,12 +32,16 @@ $(document).ready(function () {
         var tmp = "";
 
         for (var x = 0; x < doc.length; x++) {
-            bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id + '">';
+            bodytext += '<tr data-tt-id="' + doc[x]._id + '" data-tt-parent-id="' + doc[x].parent_id +
+                '" data-originalname="' + doc[x].originalFileName + '">';
             bodytext += '<td>' + doc[x].name + '</td>';
 
+            //if (doc[x].fileName === undefined) {
+            //    tmp = "";
+            //}
             tmp = (doc[x].fileName === undefined) ? "" : ' href="' + doc[x].fileName + '"';
 
-            bodytext += '<td><a' + tmp + '>' + doc[x].originalFileName + '</a></td>';
+            bodytext += '<td><a' + tmp + '>' + doc[x].fileName + '</a></td>';
             bodytext += '<td class="fileName" style="display: none">' + doc[x].fileName + '</td>';
             bodytext += '</tr>'
         }
@@ -68,7 +72,9 @@ $(document).ready(function () {
         //double click
         $('#docTree tr').dblclick(function () {
             var name = $(this).find('td.fileName').html();
-            docView(name); //utils.js
+
+            if (name !== undefined && name !== "")
+                docView(name); //utils.js
         });
 
     };
@@ -79,6 +85,7 @@ $(document).ready(function () {
         var $tr = $('#docTree tr.selected');
 
         if ($tr.length == 0) {
+            swal("Выберите ветку, куда добавлять файл");
             console.info('not selected');
             return;
         }
@@ -95,6 +102,7 @@ $(document).ready(function () {
 
         if ($tr.length == 0) {
             console.info('not selected');
+            swal("Выберите файл");
             return;
         }
 
@@ -148,6 +156,26 @@ $(document).ready(function () {
 
     });
 
+    //download
+    $('#downloadDoc').bind('click', function () {
+        var $tr = $('#docTree tr.selected');
+
+        if ($tr.length == 0) {
+            console.info('not selected');
+            swal("Выберите файл");
+            return;
+        }
+
+        var originalname = $tr.attr('data-originalname');
+        var fileName = $tr.find('td.fileName').html();
+
+        $.fileDownload('/uploads/' + fileName);
+
+        return false;
+        //window.location.href = '/uploads/' + fileName;
+    });
+
+
     $('#hiddenSelectFile').on('change', function () {
         $('#uploadForm').submit(); //......
         return false;
@@ -168,6 +196,4 @@ $(document).ready(function () {
         });
         return false;
     });
-
-
 });

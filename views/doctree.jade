@@ -14,9 +14,12 @@ block content
                     input(type="file", name="doc", id="hiddenSelectFile", accept=".pdf, .html")
                     input(type="submit", name="submit", value="upload doc")
                     input(id="parentId", type="text", name="parentId")
-
-                input(id="addDoc", type="button", value="+")
-                input(id="delDoc", type="button", value="-")
+                
+                - if (roles.indexOf('admin')) {
+                    input(id="addDoc", type="button", value="+")
+                    input(id="delDoc", type="button", value="-")
+                - }
+                input(id="downloadDoc", type="button", value="download")
                 span(id = "status")
 
 
@@ -46,6 +49,10 @@ block content
     script(src="/libs/pdfjs/pdfjs-ui-utils.js")
     script(src="/libs/simplePagination/jquery.simplePagination.js ")
     script(src="/libs/sweetalert/dist/sweetalert.min.js")
-    script(src="/scripts/journal.js")
+    script(src="/libs/filedownload/filedownload.js")
+
+    
+    script(src="/scripts/doctree.js")
+
 
     

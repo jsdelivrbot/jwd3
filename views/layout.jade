@@ -25,13 +25,13 @@ html
     header jwd nodejs server
         ul
             li 
-                a(href="/register") Register
+                a(href="/register") Регистрация
             li 
-                a(href="/login") Login
+                a(href="/login") Войти
             li 
-                a(href="/doctree") Docs
+                a(href="/doctree") Документы
             li 
-                a(href="/") Home
+                a(href="/") Домой
         
         fieldset
             legend status
@@ -42,4 +42,5 @@ html
         block content
       
     footer
-      p created by jWinterDay
+      - var year = new Date().getFullYear();
+      p Магистраль сервис, #{year}

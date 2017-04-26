@@ -1,4 +1,3 @@
-//var setCSRFToken = function (securityToken) {
     var csrfHeader = 'X-CSRF-Token';
     $.ajaxPrefilter(function (options, _, xhr) {
         if (!xhr.crossDomain) {
@@ -46,7 +45,7 @@
             $('#pdfPage').pagination({
                 items: pdf.numPages,
                 cssStyle: 'compact-theme',
-                onPageClick: function (pageNumber, event) { 
+                onPageClick: function (pageNumber, event) {
                     setPage(pageNumber);
                 }
             });
@@ -145,7 +144,3 @@
             return promise;
         }
     };
-
-
-    
-//};
