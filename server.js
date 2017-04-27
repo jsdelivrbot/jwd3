@@ -26,7 +26,7 @@ app.use(express.cookieParser());
 app.use(express.session({
     secret: "ggf54",
     key: "sid",
-    cookie: {httpOnly: true}//false - accessible into document.cookie...
+    cookie: {httpOnly: false}//false - accessible into document.cookie...
 }));
 app.use(express.csrf());
 app.use(function (req, res, next) {
@@ -47,6 +47,10 @@ db.once('open', function() {
 mongoose.connect(conf.settings.database_url);
 
 //ROUTING
+//app.get('*', function (req, res, next) {
+//    return next();
+//});
+
 require("./routes/auth")(app, mongoose);
 require("./routes/index")(app);
 require("./routes/gridresult")(app, mongoose);

@@ -97,8 +97,26 @@ $(document).ready(function () {
     });
 
 
-    //set email field
-    $("#testBtn").bind("click", function () {
+    function parseJwt(token) {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace('-', '+').replace('_', '/');
+        return JSON.parse(window.atob(base64));
+    };
 
-    });
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length == 2)
+            return parts.pop().split(";").shift();
+    }
+
+    var token = getCookie('token');
+    var parsedToken = parseJwt(token);
+    var email = parsedToken.email;
+    var text = (email === undefined) ? '' : 'Вход выполнен, ' + email;
+
+    $('#loggedUser').html(text);
+
+    //$('#loggedUser').html(token);
+    //var user = 'fsdfds';//window.innerHeight;//document.cookie.split(';');//parseJwt
 });

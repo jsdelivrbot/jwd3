@@ -9,6 +9,7 @@ html
     script(src="/libs/jquery-1.8.3.min.js")
     script(src="/libs/pdfjs/pdf.js")
 
+    script(src="/libs/jquery.cookie/jquery.cookie.js")
     script(src="/scripts/utils.js")
     script(src="/scripts/common.js")
 
@@ -26,7 +27,9 @@ html
 
         div
             input(id="logoutBtn", type="button", value="logout", style="float: right; margin-left: 10px")
-            //a(style="float: right") Вход выполнен: 
+
+            
+            a(id="loggedUser", class="layoutText", style="float: right")
 
         ul
             li 

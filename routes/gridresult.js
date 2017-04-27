@@ -26,14 +26,13 @@ module.exports = function (app, mongoose) {
 
             callback(null, true)
         }
-    }); //.single('doc');
+    });
 
 
     var Journal = require("../models/Journal")(mongoose);
 
     app.get("/doctree", jwtauth.authenticate, function (req, res) {
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
+        var decoded = req.decoded;
         var roles = decoded.roles;
 
         res.render("doctree", {
@@ -43,8 +42,7 @@ module.exports = function (app, mongoose) {
 
     //get doc
     app.post("/api/doc", jwtauth.authenticate, function (req, res) {
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
+        var decoded = req.decoded;
         var userId = decoded.userId;
 
         var root = {
@@ -103,8 +101,7 @@ module.exports = function (app, mongoose) {
 
     //get doc name
     app.post("/api/doc_name", jwtauth.authenticate, function (req, res) {
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
+        var decoded = req.decoded;
         var userId = decoded.userId;
 
         Journal.find({}, 'fileName')
@@ -117,17 +114,16 @@ module.exports = function (app, mongoose) {
 
     //TODO jwtauth.authenticate не работает
     app.post('/api/protected/journal/upload', function (req, res, next) {
+        var file = req.file;
+        var decoded = req.decoded;
+        var userId = decoded.userId;
+
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 return
             }
 
             //save into db
-            var file = req.file;
-            var token = req.cookies.token;
-            var decoded = jwtauth.decode(token);
-            var userId = decoded.userId;
-
             var doc = new Journal({
                 name: file.originalname,
                 user: userId,
@@ -146,7 +142,7 @@ module.exports = function (app, mongoose) {
     });
 
     //del doc
-    app.post('/api/protected/journal/del', function (req, res, next) {
+    app.post('/api/protected/journal/del', function (req, res) {
         Journal.findOne({ _id: req.body.id }, function (err, doc) {
             doc.remove(function (err, doc) {
                 var fileName = req.body.fileName;
@@ -166,9 +162,8 @@ module.exports = function (app, mongoose) {
     });
 
     //ad doc folder
-    app.post('/api/protected/journal/add_folder', function (req, res, next) {
-        var token = req.cookies.token;
-        var decoded = jwtauth.decode(token);
+    app.post('/api/protected/journal/add_folder', function (req, res) {
+        var decoded = req.decoded;
         var userId = decoded.userId;
 
         var doc = new Journal({

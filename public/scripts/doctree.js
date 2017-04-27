@@ -42,10 +42,7 @@ $(document).ready(function () {
                 '" data-is-folder="' + currentDoc.isFolder +
                 '">';
 
-            if (currentDoc['isFolder'] === true)
-                tmp = '<span class="folder"></span>'
-            else
-                tmp = '<span class="file"></span>';
+            tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
 
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
@@ -79,6 +76,7 @@ $(document).ready(function () {
             initialState: 'expanded',
             onNodeExpand: function () {
                 //
+
             }
         });
 
@@ -90,9 +88,11 @@ $(document).ready(function () {
 
         //double click
         $('#docTree tr').dblclick(function () {
-            var name = $(this).find('td.fileName').html();
+            var name = $(this).find('td.fileName').html(); //attr('data-is-folder'); // find('td.fileName').html();
+            var isFolder = $(this).attr('data-is-folder');
 
-            if (name != "undefined" && name !== "")
+            console.info(isFolder, ', ', name);
+            if (isFolder == 'false')//name != "undefined" && name !== "")
                 docView(name); //utils.js
         });
 

@@ -53,6 +53,9 @@ div[readonly] {
     /*display: none;*/
 }
 
+.layoutText {
+    color: #1124f8;
+}
 
 #wcfAddress, #imageAddress {
     width: 100%;
