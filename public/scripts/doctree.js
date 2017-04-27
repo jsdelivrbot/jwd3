@@ -123,7 +123,7 @@ $(document).ready(function () {
 
     //add folder
     $('#addFolderDoc').bind('click', function () {
-        //recursive del?
+        //TODO recursive del?
         var $tr = $('#docTree tr.selected');
         var isFolder = $tr.attr('data-is-folder');
 
@@ -256,6 +256,7 @@ $(document).ready(function () {
         }
 
         var originalname = $tr.attr('data-originalname');
+        
         var fileName = $tr.find('td.fileName').html();
 
         $.fileDownload('/uploads/' + fileName);

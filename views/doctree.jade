@@ -11,7 +11,7 @@ block content
 
             form(id="uploadForm", enctype="multipart/form-data", action="/api/protected/journal/upload", method="post")
                 div(hidden)
-                    input(type="file", name="doc", id="hiddenSelectFile", accept=".pdf, .html")
+                    input(type="file", name="doc", id="hiddenSelectFile", accept=".pdf")
                     input(type="submit", name="submit", value="upload doc")
                     input(id="parentId", type="text", name="parentId")
                 

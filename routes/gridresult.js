@@ -114,14 +114,15 @@ module.exports = function (app, mongoose) {
 
     //TODO jwtauth.authenticate не работает
     app.post('/api/protected/journal/upload', function (req, res, next) {
-        var file = req.file;
-        var decoded = req.decoded;
-        var userId = decoded.userId;
-
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 return
             }
+
+            var file = req.file;
+            var token = req.cookies.token;
+            var decoded = jwtauth.decode(token);
+            var userId = decoded.userId;
 
             //save into db
             var doc = new Journal({
@@ -142,7 +143,7 @@ module.exports = function (app, mongoose) {
     });
 
     //del doc
-    app.post('/api/protected/journal/del', function (req, res) {
+    app.post('/api/protected/journal/del', jwtauth.authenticate, function (req, res) {
         Journal.findOne({ _id: req.body.id }, function (err, doc) {
             doc.remove(function (err, doc) {
                 var fileName = req.body.fileName;
@@ -162,7 +163,7 @@ module.exports = function (app, mongoose) {
     });
 
     //ad doc folder
-    app.post('/api/protected/journal/add_folder', function (req, res) {
+    app.post('/api/protected/journal/add_folder', jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
         var userId = decoded.userId;
 
