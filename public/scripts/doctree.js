@@ -49,13 +49,13 @@ $(document).ready(function () {
             tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
             tmp += '>';
             tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
-            bodytext += '<td><a' + tmp + '</a></td>';
+            bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
 
             tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
             bodytext += '<td><p>' + tmp + '</p></td>';
 
             tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
-            bodytext += '<td><p>' + tmp + '</p></td>';
+            bodytext += '<td><p class="text-primary">' + tmp + '</p></td>';
 
 
             bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
@@ -142,7 +142,8 @@ $(document).ready(function () {
                 },
                 url: "/api/protected/journal/add_folder",
                 success: function (data, textStatus, jqXHR) {
-                    $("#status").empty().text(data.message);
+                    //$("#status").empty().text(data.message);
+                    $("#message").html(data.message);
 
                     $('#docTree').remove();
                     loadDocData();
@@ -213,7 +214,8 @@ $(document).ready(function () {
                 },
                 url: "/api/protected/journal/del",
                 success: function (data, textStatus, jqXHR) {
-                    $("#status").empty().text(data.message);
+                    $("#message").html(data.message);
+                    //$("#status").empty().text(data.message);
 
                     $('#docTree').remove();
                     loadDocData();

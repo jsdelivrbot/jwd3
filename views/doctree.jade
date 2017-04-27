@@ -17,11 +17,11 @@ block content
                 
                 div
                     -if ( roles && roles.indexOf("admin") !== -1 ) {
-                        input(id="addFolderDoc", type="button", class="btn btn-primary has-margin", value="add folder")
-                        input(id="addDoc", type="button", class="btn btn-primary has-margin", value="add doc")
-                        input(id="delDoc", type="button", class="btn btn-danger has-margin", value="del doc")
+                        input(id="addFolderDoc", type="button", class="btn btn-primary has-margin", value="Добавить папку")
+                        input(id="addDoc", type="button", class="btn btn-primary has-margin", value="Добавить файл")
+                        input(id="delDoc", type="button", class="btn btn-danger has-margin", value="Удалить файл")
                     - }
-                    input(id="downloadDoc", type="button", class="btn btn-success has-margin", value="download")
+                    input(id="downloadDoc", type="button", class="btn btn-success has-margin", value="Скачать")
                 span(id = "status")
 
 

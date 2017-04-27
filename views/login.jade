@@ -7,7 +7,7 @@ block content
             
         fieldset
             legend login
-            ol
+            ul
                 li
                     label(for="login") email or login
                     input(id="login", type="text")
@@ -16,11 +16,13 @@ block content
                     input(id="password", type="password")
 
             input(id="csrftoken", type="hidden", value="#{csrftoken}")
-            input(id="loginBtn", type="button", value="api login")
+            input(id="loginBtn", type="button", class="btn btn-primary", value="Войти")
 
             br
             br
-            br
             a(href="/register") register
+            br
+            br
+            br
 
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")

@@ -7,7 +7,7 @@ block content
     
         fieldset
             legend register
-            ol
+            ul
                 li
                     label(for="login") email or login
                     input(id="login", type="text")
@@ -19,7 +19,7 @@ block content
                     input(id="confirmPassword", type="password")
             
             input(id="csrftoken", type="hidden", value="#{csrftoken}")
-            input(id="registerBtn", type="button", value="Api register")
+            input(id="registerBtn", type="button", class="btn btn-primary", value="Зарегистрироваться")
 
             br
             br

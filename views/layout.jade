@@ -31,10 +31,10 @@ html
         header jwd nodejs server
 
             div
-                input(id="logoutBtn", type="button", value="logout", style="float: right; margin-left: 10px")
+                input(id="logoutBtn", type="button", value="logout", class="btn btn-primary", style="float: right; margin-left: 10px")
 
             
-                a(id="loggedUser", class="layoutText", style="float: right")
+                p(id="loggedUser", class="layoutText", style="float: right")
 
             ul
                 li 
@@ -55,4 +55,4 @@ html
       
         footer
           - var year = new Date().getFullYear();
-          p Магистраль сервис, #{year}
+          h2(class="text-info") Магистраль сервис, #{year}

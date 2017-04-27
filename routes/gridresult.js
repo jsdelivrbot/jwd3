@@ -139,7 +139,7 @@ module.exports = function (app, mongoose) {
         });
 
         res.setHeader("Content-type", "text/html");
-        res.end("File is uploaded");
+        res.end("Скачано");
     });
 
     //del doc
@@ -159,7 +159,7 @@ module.exports = function (app, mongoose) {
             });
         });
 
-        res.send({ message: "File is deleted" });
+        res.send({ message: "Файл удален" });
     });
 
     //ad doc folder
@@ -176,6 +176,6 @@ module.exports = function (app, mongoose) {
         });
         doc.save();
 
-        res.send({ message: "Folder is added" });
+        res.send({ message: "Папка добавлена" });
     });
 };
