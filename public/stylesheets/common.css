@@ -57,6 +57,10 @@ div[readonly] {
     color: #1124f8;
 }
 
+.layoutMessage {
+    color: #f00d06;
+}
+
 #wcfAddress, #imageAddress {
     width: 100%;
 }

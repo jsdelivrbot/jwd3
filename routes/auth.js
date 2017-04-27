@@ -15,9 +15,9 @@ module.exports = function (app, mongoose) {
     app.post("/api/register", function (req, res, next) {
         //console.info("reg");
 
-        var login = req.body.login; //XSS!!!!
-        var password = req.body.password; //XSS!!!!
-        var confirmPassword = req.body.confirmPassword; //XSS!!!!
+        var login = jwtauth.htmlEscape(req.body.login); //XSS!!!!
+        var password = jwtauth.htmlEscape(req.body.password); //XSS!!!!
+        var confirmPassword = jwtauth.htmlEscape(req.body.confirmPassword); //XSS!!!!
 
         if (password == confirmPassword && login.length > 0 && password.length > 0) {
             //create user
@@ -60,8 +60,8 @@ module.exports = function (app, mongoose) {
     });
 
     app.post("/api/login", function (req, res, next) {
-        var login = req.body.login; //XSS!!!!
-        var password = req.body.password; //XSS!!!!
+        var login = jwtauth.htmlEscape(req.body.login); //XSS!!!!
+        var password = jwtauth.htmlEscape(req.body.password); //XSS!!!!
 
         if (login.length > 0 && password.length > 0) {
             //find user

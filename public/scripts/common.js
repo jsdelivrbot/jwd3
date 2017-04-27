@@ -2,6 +2,9 @@ $(document).ready(function () {
     $.ajaxSetup({
         xhrFields: {
             withCredentials: true
+        },
+        complete: function () {
+            setLoginName(); //set login name on layout
         }
     });
 
@@ -71,6 +74,11 @@ $(document).ready(function () {
         });
     });
 
+    $("#password").on("keydown", function (event) {
+        if (event.which == 13)
+            $("#loginBtn").click();
+    });
+
     //logout
     $("#logoutBtn").bind("click", function () {
         //var csrftoken = $("#csrftoken").val();
@@ -110,13 +118,15 @@ $(document).ready(function () {
             return parts.pop().split(";").shift();
     }
 
-    var token = getCookie('token');
-    var parsedToken = parseJwt(token);
-    var email = parsedToken.email;
-    var text = (email === undefined) ? '' : 'Вход выполнен, ' + email;
+    var setLoginName = function () {
+        var token = getCookie('token');
+        var parsedToken = parseJwt(token);
+        var email = parsedToken.email;
+        var text = (email === undefined) ? '' : 'Вход выполнен, ' + email;
 
-    $('#loggedUser').html(text);
+        $('#loggedUser').html(text);
+    };
 
-    //$('#loggedUser').html(token);
-    //var user = 'fsdfds';//window.innerHeight;//document.cookie.split(';');//parseJwt
+    //set name
+    setLoginName();
 });
