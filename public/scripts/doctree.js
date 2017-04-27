@@ -197,6 +197,11 @@ $(document).ready(function () {
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.find('td.fileName').html();
 
+        var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
+        if (children.length !== 0) {
+            swal('Сначала удалите все вложенные файлы');
+            return;
+        }
 
         var ajaxDel = function (cb) {
             $.ajax({
@@ -256,7 +261,7 @@ $(document).ready(function () {
         }
 
         var originalname = $tr.attr('data-originalname');
-        
+
         var fileName = $tr.find('td.fileName').html();
 
         $.fileDownload('/uploads/' + fileName);
