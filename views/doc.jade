@@ -2,19 +2,13 @@ extends layout
 
 block content
     input(id="csrftoken", type="hidden", value="#{csrftoken}")
+    input(id="docName", type="hidden", value="#{docName}")
 
-    section
-        hgroup
-            h1 doc
-            
-        fieldset
-            legend doc
-            input(id="docName", type="hidden", value="#{docName}")
-
-            div(id="pdfPage")
-            div(id="docContainer", class="pdf-content")
-                canvas(id="pdfCanvas")
-                div(id="ldiv")
+    div(id="pdfDiv")
+        div(id="pdfPage", style="position: fixed")
+        div(id="docContainer", class="pdf-content")
+            canvas(id="pdfCanvas")
+            div(id="ldiv")
 
     link(rel="stylesheet", href="/stylesheets/doctree.css")
     link(rel="stylesheet", href="/libs/simplePagination/simplePagination.css")
@@ -24,5 +18,7 @@ block content
     script(src="/libs/jquery-treetable/jquery.treetable.js")
     script(src="/libs/pdfjs/pdfjs-ui-utils.js")
     script(src="/libs/simplePagination/jquery.simplePagination.js ")
-    script(src="/scripts/doctree.js")
+    script(src="/libs/underscore/underscore.js")
+
+    //script(src="/scripts/doctree.js")
     script(src="/scripts/doc.js")

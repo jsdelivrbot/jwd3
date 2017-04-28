@@ -27,17 +27,17 @@ block content
 
     input(id="csrftoken", type="hidden", value="#{csrftoken}")
 
-    section
-        hgroup
-            h1 doc tree
+    //section(id="docTreeSection")
+    //    hgroup
+    //        h1 doc tree
             
-        fieldset
-            legend doc tree
-            
-            div(id="pdfPage", style="position: fixed")
-            div(id="docContainer", class="pdf-content")
-                canvas(id="pdfCanvas")
-                div(id="ldiv")
+    //    fieldset
+    //        legend doc tree
+    div(id="pdfDiv")        
+        div(id="pdfPage", style="position: fixed")
+        div(id="docContainer", class="pdf-content")
+            canvas(id="pdfCanvas")
+            div(id="ldiv")
 
     link(href="/libs/jquery-treetable/css/jquery.treetable.css", rel="stylesheet", type="text/css")
     link(href="/libs/jquery-treetable/css/jquery.treetable.theme.default.css", rel="stylesheet", type="text/css")
@@ -54,6 +54,8 @@ block content
     script(src="/libs/simplePagination/jquery.simplePagination.js ")
     script(src="/libs/sweetalert/dist/sweetalert.min.js")
     script(src="/libs/filedownload/filedownload.js")
+
+    script(src="/libs/underscore/underscore.js")
 
     script(src="/scripts/doctree.js")
 

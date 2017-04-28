@@ -55,7 +55,7 @@ $(document).ready(function () {
             bodytext += '<td><p>' + tmp + '</p></td>';
 
             tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
-            bodytext += '<td><p class="text-primary">' + tmp + '</p></td>';
+            bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
 
             bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
@@ -91,7 +91,6 @@ $(document).ready(function () {
             var name = $(this).find('td.fileName').html(); //attr('data-is-folder'); // find('td.fileName').html();
             var isFolder = $(this).attr('data-is-folder');
 
-            console.info(isFolder, ', ', name);
             if (isFolder == 'false')//name != "undefined" && name !== "")
                 docView(name); //utils.js
         });
@@ -294,29 +293,26 @@ $(document).ready(function () {
         return false;
     });
 
+    var h_hght = 500; //высота шапки
+    var h_mrg = 3; //отступ когда шапка уже не видна
 
-
-    var h_hght = 630; // высота шапки
-    var h_mrg = 10;// отступ когда шапка уже не видна
-                 
-    $(function(){
- 
+    $(function () {
         var elem = $('#pdfPage');
         var top = $(this).scrollTop();
-     
-        if(top > h_hght){
+
+        if (top > h_hght) {
             elem.css('top', h_mrg);
-        }           
-     
-        $(window).scroll(function(){
+        }
+
+        $(window).scroll(_.throttle(function () {
+            //var rect = document.getElementById('pdfDiv').getBoundingClientRect();
             top = $(this).scrollTop();
-         
-            if (top+h_mrg < h_hght) {
-                elem.css('top', (h_hght-top));
+
+            if (top + h_mrg < h_hght) {
+                elem.css('top', (h_hght - top));
             } else {
                 elem.css('top', h_mrg);
             }
-        });
- 
+        }, 160));
     });
 });

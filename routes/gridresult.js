@@ -52,7 +52,8 @@ module.exports = function (app, mongoose) {
             isFolder: true
         };
 
-        Journal.find({}).populate('user').exec(function (err, docs) {
+        //TODO лишние поля выводит
+        Journal.find({}).populate('user', 'email').exec(function (err, docs) {
             //TODO оптимизировать
             var queue = [];
             var currentNode;
