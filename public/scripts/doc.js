@@ -15,7 +15,6 @@ $(document).ready(function () {
         }
 
         $(window).scroll(_.throttle(function () {
-            console.info('dgfgdfgd');
             //var rect = document.getElementById('pdfDiv').getBoundingClientRect();
             top = $(this).scrollTop();
 
