@@ -20,7 +20,7 @@ module.exports = function (app, mongoose) {
         storage: storage,
         fileFilter: function (req, file, callback) {
             var ext = path.extname(file.originalname);
-            if (ext !== '.pdf' && ext !== '.html') {
+            if (ext !== '.pdf') {
                 return callback(new Error('Only .pdf and .html'))
             }
 
@@ -117,7 +117,8 @@ module.exports = function (app, mongoose) {
     app.post('/api/protected/journal/upload', function (req, res, next) {
         upload.single('doc')(req, res, function (err) {
             if (err) {
-                return
+                res.setHeader("Content-type", "text/html");
+                return res.end("Только .pdf");
             }
 
             var file = req.file;
@@ -137,10 +138,15 @@ module.exports = function (app, mongoose) {
             });
 
             doc.save();
+
+            res.setHeader("Content-type", "text/html");
+            res.end("Документ добавлен");
         });
 
-        res.setHeader("Content-type", "text/html");
-        res.end("Скачано");
+        //console.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+
+        //res.setHeader("Content-type", "text/html");
+        //res.end("Документ добавлен");
     });
 
     //del doc

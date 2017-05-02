@@ -5,9 +5,6 @@ $(document).ready(function () {
 
     //SOCKET
     var socket = io();
-
-    //socket.emit('test');
-    //receive message from server
     socket.on('clients', function (msg) {
         $('#totalUsers').html('Пользователей онлайн: ' + msg.totalClients);
     });
@@ -293,7 +290,9 @@ $(document).ready(function () {
                 status('Error: ' + xhr.status);
             },
             success: function (response) {
-                $("#status").empty().text(response.toString());
+                //$("#status").empty().text(response.toString());
+                $("#message").empty().text(response.toString());
+                
 
                 $('#docTree').remove();
                 loadDocData();
