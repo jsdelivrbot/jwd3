@@ -43,7 +43,7 @@ module.exports = function (app, mongoose) {
                         email: user.email
                     };
                     var token = jwtauth.sign(payload);
-                    res.cookie("token", token, { maxAge: 1 * 24 * 3600000, httpOnly: false });//httpOnly = true -> can't read with document.cookie
+                    res.cookie("token", token, { maxAge: 1 * 24 * 3600000, httpOnly: false }); //httpOnly = true -> can't read with document.cookie
                     res.json({ success: true, message: 'user created. ' });
                 }
             });
@@ -83,8 +83,8 @@ module.exports = function (app, mongoose) {
                             };
                             var token = jwtauth.sign(payload);
                             //cookie = 1 day
-                            res.cookie('token', token, { maxAge: 1 * 24 * 3600000, httpOnly: false });//httpOnly = true -> can't read with document.cookie
-                            res.json({ success: true, message: 'user login' });
+                            res.cookie('token', token, { maxAge: 1 * 24 * 3600000, httpOnly: false }); //httpOnly = true -> can't read with document.cookie
+                            res.json({ success: true, message: 'user logged' });
                         } else {
                             res.json({ success: false, message: 'password is wrong' });
                         }

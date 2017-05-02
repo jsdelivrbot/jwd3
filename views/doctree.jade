@@ -1,6 +1,8 @@
 extends layout
 
 block content
+    p(id="totalUsers")
+
     section
         hgroup
             h1 Docs tree
@@ -56,6 +58,7 @@ block content
     script(src="/libs/filedownload/filedownload.js")
 
     script(src="/libs/underscore/underscore.js")
+    script(src="/socket.io/socket.io.js")
 
     script(src="/scripts/doctree.js")
 

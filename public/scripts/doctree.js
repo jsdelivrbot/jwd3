@@ -3,6 +3,15 @@ $(document).ready(function () {
     var rowidBuf;
     var docContainerName = 'docContainer';
 
+    //SOCKET
+    var socket = io();
+
+    //socket.emit('test');
+    //receive message from server
+    socket.on('clients', function (msg) {
+        $('#totalUsers').html('Пользователей онлайн: ' + msg.totalClients);
+    });
+
     var loadDocData = function () {
         $.ajax({
             type: "POST",

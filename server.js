@@ -57,6 +57,19 @@ require("./routes/gridresult")(app, mongoose);
 
 var server = http.createServer(app);
 
+var io = require("socket.io").listen(server);
+io.set('log level', 0);
+
+io.on('connection', function (socket) {
+    io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
+
+    socket.on('disconnect', function () {
+        io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
+    });
+});
+
+
+
 server.listen(app.get("port"), function () {
     console.info("listen on port: " + app.get("port"));
 });
