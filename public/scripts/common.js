@@ -120,9 +120,15 @@ $(document).ready(function () {
 
     var setLoginName = function () {
         var token = getCookie('token');
+
+        if (token === undefined) {
+            $('#loggedUser').html('Вход не выполнен');
+            return;
+        }
+
         var parsedToken = parseJwt(token);
         var email = parsedToken.email;
-        var text = (email === undefined) ? '' : 'Вход выполнен, ' + email;
+        var text = (email === undefined) ? 'Вход не выполнен' : 'Вход выполнен, ' + email;
 
         $('#loggedUser').html(text);
     };

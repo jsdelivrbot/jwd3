@@ -42,8 +42,9 @@ app.disable('x-powered-by');
 var db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function() {
-    console.log("connected to db");
+    console.log("database is opened");
 });
+
 mongoose.connect(conf.settings.database_url);
 
 //ROUTING

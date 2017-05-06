@@ -21,7 +21,7 @@ module.exports = function (app, mongoose) {
         fileFilter: function (req, file, callback) {
             var ext = path.extname(file.originalname);
             if (ext !== '.pdf') {
-                return callback(new Error('Only .pdf and .html'))
+                return callback(new Error('Only .pdf'))
             }
 
             callback(null, true)
