@@ -122,10 +122,12 @@ $(document).ready(function () {
         var token = getCookie('token');
 
         if (token === undefined) {
+            $('#logoutBtn').hide();
             $('#loggedUser').html('Вход не выполнен');
             return;
         }
 
+        $('#logoutBtn').show();
         var parsedToken = parseJwt(token);
         var email = parsedToken.email;
         var text = (email === undefined) ? 'Вход не выполнен' : 'Вход выполнен, ' + email;
