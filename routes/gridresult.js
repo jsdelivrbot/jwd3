@@ -36,9 +36,49 @@ module.exports = function (app) {
         var decoded = req.decoded;
         var roles = decoded.roles;
 
-        res.render("doctree", {
-            roles: roles
+        var root = {
+            _id: '000000000000000000000001',
+            name: 'root',
+            parent: null,
+            isFolder: true
+        };
+
+        Journal.find({}).populate('user', 'email').exec(function (err, docs) {
+            //TODO оптимизировать
+            var queue = [];
+            var currentNode;
+            var getChildren = function (parent_id) {
+                var children = _.filter(docs, function (item) {
+                    var isEquals = new String(item['parent']).valueOf() == new String(parent_id).valueOf();
+                    return isEquals;
+                });
+
+                return children;
+            };
+
+            queue.push(root);
+
+            //children
+            var getRecursive = function (node) {
+                var children = getChildren(node['_id']);
+                for (var x = 0; x < children.length; x++) {
+                    queue.push(children[x]);
+                    getRecursive(children[x]);
+                }
+            };
+
+            getRecursive(root);
+
+            return res.render("doctree", {
+                roles: roles,
+                docs: queue
+            });
         });
+
+
+        //res.render("doctree", {
+        //    roles: roles
+        //});
     });
 
     //get doc
@@ -53,7 +93,6 @@ module.exports = function (app) {
             isFolder: true
         };
 
-        //TODO лишние поля выводит
         Journal.find({}).populate('user', 'email').exec(function (err, docs) {
             //TODO оптимизировать
             var queue = [];

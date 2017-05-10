@@ -26,60 +26,7 @@ $(document).ready(function () {
 
     loadDocData();
 
-    var fillTree = function (doc) {
-        var tableText = '<table id="docTree">';
-        tableText += '<thead><tr>';
-        tableText += '<th>Имя</th>';
-        tableText += '<th>Ссылка</th>';
-        tableText += '<th>Дата загрузки</th>';
-        tableText += '<th>Добавил</th>';
-        tableText += '<th>Дом. страница</th>';
-        tableText += '<th style="display: none">Имя файла в базе</th>';
-        tableText += '</tr></thead>';
-
-        var bodytext = '<tbody>';
-        var tmp = '';
-        var currentDoc;
-
-        for (var x = 0; x < doc.length; x++) {
-            currentDoc = doc[x];
-            //console.info(currentDoc);
-
-
-            bodytext += '<tr data-tt-id="' + currentDoc._id +
-                '" data-tt-parent-id="' + currentDoc.parent +
-                '" data-originalname="' + currentDoc.originalFileName +
-                '" data-is-folder="' + currentDoc.isFolder +
-                '">';
-
-            tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
-
-            bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
-
-            tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
-            tmp += '>';
-            tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
-            bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
-
-            tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
-            bodytext += '<td><p>' + tmp + '</p></td>';
-
-            tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
-            bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
-
-            bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
-            bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
-            bodytext += '</tr>'
-        }
-        bodytext += '</tbody></table>';
-        tableText += bodytext;
-
-        $('#doctreeContainer').append(tableText);
-    };
-
     var treeSettings = function (doc) {
-        fillTree(doc);
-
         //tree
         $('#docTree').treetable({
             expandable: true,
@@ -98,7 +45,7 @@ $(document).ready(function () {
 
         //double click
         $('#docTree tr').dblclick(function () {
-            var name = $(this).find('td.fileName').html();
+            var name = $(this).attr('data-fileName');
             var isFolder = $(this).attr('data-is-folder');
 
             if (isFolder == 'false')
