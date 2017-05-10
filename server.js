@@ -47,14 +47,18 @@ db.once('open', function() {
 
 mongoose.connect(conf.settings.database_url);
 
+//SCHEMA
+require("./models/Journal");
+require("./models/User");
+
 //ROUTING
 //app.get('*', function (req, res, next) {
 //    return next();
 //});
 
-require("./routes/auth")(app, mongoose);
+require("./routes/auth")(app);
 require("./routes/index")(app);
-require("./routes/gridresult")(app, mongoose);
+require("./routes/gridresult")(app);
 
 var server = http.createServer(app);
 

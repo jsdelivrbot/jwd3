@@ -2,8 +2,10 @@ extends layout
 
 block content
     input(id="csrftoken", type="hidden", value="#{csrftoken}")
-    input(id="docName", type="hidden", value="#{docName}")
 
+
+
+    input(id="docName", type="hidden", value="#{docName}")
     div(id="pdfDiv")
         div(id="pdfPage", style="position: fixed")
         div(id="docContainer", class="pdf-content")
@@ -20,6 +22,8 @@ block content
     script(src="/libs/simplePagination/jquery.simplePagination.js ")
     script(src="/libs/underscore/underscore.js")
 
+
+    script(src="/libs/pdfjs/pdf.js")
     script(src="/libs/pdfjs-dist/web/compatibility.js")
     script(src="/libs/pdfjs-dist/build/pdf.combined.js")
     script(src="/libs/pdfjs-dist/web/pdf_viewer.js")

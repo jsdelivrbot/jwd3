@@ -3,8 +3,31 @@ extends layout
 block content
     h1 Информационная база Магистраль сервис
 
-    img(src="/images/terminator.jpg", width="100%")
+    input(id="docName", type="hidden", value="#{docName}")
+
+    div(id="pdfDiv")
+    //div(id="pdfPage", style="position: fixed")
+    div(id="docContainer", class="pdf-content")
+        canvas(id="pdfCanvas")
+        div(id="ldiv")
 
 
     input(id="_csrf", type="hidden", value="#{csrftoken}")
+
+
+    link(rel="stylesheet", href="/libs/simplePagination/simplePagination.css")
     script(src="/libs/jquery-cookie-1.4.1/jquery.cookie.js")
+    script(src="/libs/simplePagination/jquery.simplePagination.js ")
+    script(src="/libs/underscore/underscore.js")
+
+
+    - if(docName) {
+        script(src="/libs/pdfjs/pdf.js")
+        script(src="/libs/pdfjs-dist/web/compatibility.js")
+        script(src="/libs/pdfjs-dist/build/pdf.combined.js")
+        script(src="/libs/pdfjs-dist/web/pdf_viewer.js")
+    - }
+
+
+    script(src="/scripts/index.js")
+    

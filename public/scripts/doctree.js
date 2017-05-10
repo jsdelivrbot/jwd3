@@ -33,6 +33,7 @@ $(document).ready(function () {
         tableText += '<th>Ссылка</th>';
         tableText += '<th>Дата загрузки</th>';
         tableText += '<th>Добавил</th>';
+        tableText += '<th>Дом. страница</th>';
         tableText += '<th style="display: none">Имя файла в базе</th>';
         tableText += '</tr></thead>';
 
@@ -63,7 +64,7 @@ $(document).ready(function () {
             tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
             bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
-
+            bodytext += '<td><input type="checkbox" disabled="disabled"' + 'checked="checked"' + '/></td>';
             bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
             bodytext += '</tr>'
         }
@@ -292,7 +293,7 @@ $(document).ready(function () {
             success: function (response) {
                 //$("#status").empty().text(response.toString());
                 $("#message").empty().text(response.toString());
-                
+
 
                 $('#docTree').remove();
                 loadDocData();

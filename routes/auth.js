@@ -1,9 +1,9 @@
 var crypto = require("crypto");
 var jwtauth = require("../lib/jwtauth");
-//var User = require("../models/User");
+var mongoose = require("mongoose");
 
-module.exports = function (app, mongoose) {
-    var User = require("../models/User")(mongoose);
+module.exports = function (app) {
+    var User = mongoose.model("User");
 
     //***********************************************************
     //**********************register*****************************

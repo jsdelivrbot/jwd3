@@ -3,8 +3,9 @@ var fs = require('fs');
 var path = require('path');
 var multer = require('multer');
 var _ = require("../lib/underscore/underscore.js");
+var mongoose = require("mongoose");
 
-module.exports = function (app, mongoose) {
+module.exports = function (app) {
 
     //upload
     var storage = multer.diskStorage({
@@ -29,7 +30,7 @@ module.exports = function (app, mongoose) {
     });
 
 
-    var Journal = require("../models/Journal")(mongoose);
+    var Journal = mongoose.model("Journal");
 
     app.get("/doctree", jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
