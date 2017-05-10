@@ -76,3 +76,7 @@ div[readonly] {
 #logging {
     display: none;
 }
+
+#pdfPage {
+    margin: 5px;
+}

@@ -30,15 +30,9 @@ block content
 
 
     input(id="csrftoken", type="hidden", value="#{csrftoken}")
-
-    //section(id="docTreeSection")
-    //    hgroup
-    //        h1 doc tree
-            
-    //    fieldset
-    //        legend doc tree
+    
     div(id="pdfDiv")        
-        div(id="pdfPage", style="position: fixed")
+        div(id="pdfPage")
         div(id="docContainer", class="pdf-content")
             canvas(id="pdfCanvas")
             div(id="ldiv")
