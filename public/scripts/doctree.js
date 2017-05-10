@@ -43,6 +43,9 @@ $(document).ready(function () {
 
         for (var x = 0; x < doc.length; x++) {
             currentDoc = doc[x];
+            //console.info(currentDoc);
+
+
             bodytext += '<tr data-tt-id="' + currentDoc._id +
                 '" data-tt-parent-id="' + currentDoc.parent +
                 '" data-originalname="' + currentDoc.originalFileName +
@@ -64,7 +67,7 @@ $(document).ready(function () {
             tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
             bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
-            bodytext += '<td><input type="checkbox" disabled="disabled"' + 'checked="checked"' + '/></td>';
+            bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
             bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
             bodytext += '</tr>'
         }
@@ -95,10 +98,10 @@ $(document).ready(function () {
 
         //double click
         $('#docTree tr').dblclick(function () {
-            var name = $(this).find('td.fileName').html(); //attr('data-is-folder'); // find('td.fileName').html();
+            var name = $(this).find('td.fileName').html();
             var isFolder = $(this).attr('data-is-folder');
 
-            if (isFolder == 'false')//name != "undefined" && name !== "")
+            if (isFolder == 'false')
                 docView(name); //utils.js
         });
 
