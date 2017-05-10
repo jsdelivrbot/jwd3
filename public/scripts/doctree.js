@@ -9,23 +9,76 @@ $(document).ready(function () {
         $('#totalUsers').html('Пользователей онлайн: ' + msg.totalClients);
     });
 
-    var refreshTree = function () {
-        location.reload();
-        /*$.ajax({
-        type: "GET",
-        //dataType: "JSON",
-        url: "/doctree",
-        success: function (data, textStatus, jqXHR) {
-        //var doc = data.doc;
-        //treeSettings(doc);
-        },
-        error: function (jqXHR, textStatus, error) {
-        console.info("err", error);
-        }
-        });*/
+    var loadDocData = function () {
+        $.ajax({
+            type: "POST",
+            dataType: "JSON",
+            url: "/api/doc",
+            success: function (data, textStatus, jqXHR) {
+                var doc = data.doc;
+                treeSettings(doc);
+            },
+            error: function (jqXHR, textStatus, error) {
+                console.info("err", error);
+            }
+        });
     };
 
-    var treeSettings = function () {
+    loadDocData();
+
+    var fillTree = function (doc) {
+        var tableText = '<table id="docTree">';
+        tableText += '<thead><tr>';
+        tableText += '<th>Имя</th>';
+        tableText += '<th>Ссылка</th>';
+        tableText += '<th>Дата загрузки</th>';
+        tableText += '<th>Добавил</th>';
+        tableText += '<th>Дом. страница</th>';
+        tableText += '</tr></thead>';
+
+        var bodytext = '<tbody>';
+        var tmp = '';
+        var currentDoc;
+
+        for (var x = 0; x < doc.length; x++) {
+            currentDoc = doc[x];
+            //console.info(currentDoc);
+
+
+            bodytext += '<tr data-tt-id="' + currentDoc._id +
+                '" data-tt-parent-id="' + currentDoc.parent +
+                '" data-originalname="' + currentDoc.originalFileName +
+                '" data-is-folder="' + currentDoc.isFolder +
+                '" data-fileName="' + currentDoc.fileName +
+                '">';
+
+            tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
+
+            bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
+
+            tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
+            tmp += '>';
+            tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
+            bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
+
+            tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
+            bodytext += '<td><p>' + tmp + '</p></td>';
+
+            tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
+            bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
+
+            bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
+            bodytext += '</tr>'
+        }
+        bodytext += '</tbody></table>';
+        tableText += bodytext;
+
+        $('#doctreeContainer').append(tableText);
+    };
+
+    var treeSettings = function (doc) {
+        fillTree(doc);
+
         //tree
         $('#docTree').treetable({
             expandable: true,
@@ -52,8 +105,6 @@ $(document).ready(function () {
         });
 
     };
-
-    treeSettings();
 
     //DOC
     //upload(add file)
@@ -102,8 +153,8 @@ $(document).ready(function () {
                     //$("#status").empty().text(data.message);
                     $("#message").html(data.message);
 
-                    //$('#docTree').remove();
-                    refreshTree();
+                    $('#docTree').remove();
+                    loadDocData();
                 },
                 error: function (jqXHR, textStatus, error) {
                     console.info("err", error);
@@ -174,8 +225,8 @@ $(document).ready(function () {
                     $("#message").html(data.message);
                     //$("#status").empty().text(data.message);
 
-                    //$('#docTree').remove();
-                    refreshTree();
+                    $('#docTree').remove();
+                    loadDocData();
                 },
                 error: function (jqXHR, textStatus, error) {
                     console.info("err", error);
@@ -197,14 +248,11 @@ $(document).ready(function () {
             showLoaderOnConfirm: true
         },
         function () {
-            ajaxDel();
-
-            /*setTimeout(function () {
+            setTimeout(function () {
                 ajaxDel(function () {
                     swal("Файл удален");
-                    refreshTree();
                 });
-            }, 500);*/
+            }, 500);
         });
 
         return;
@@ -223,7 +271,6 @@ $(document).ready(function () {
         }
 
         var originalname = $tr.attr('data-originalname');
-
         var fileName = $tr.attr('data-fileName');
 
         $.fileDownload('/uploads/' + fileName);
@@ -249,8 +296,8 @@ $(document).ready(function () {
                 $("#message").empty().text(response.toString());
 
 
-                //$('#docTree').remove();
-                refreshTree();
+                $('#docTree').remove();
+                loadDocData();
             }
         });
         return false;

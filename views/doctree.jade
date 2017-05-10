@@ -3,25 +3,6 @@
 extends layout
 
 block content
-    - function convertDate(date) {
-    -    if (date === undefined) {
-    -        return '';
-    -    }
-    -    var yyyy = date.getFullYear().toString();
-    -    var mm = (date.getMonth()+1).toString();
-    -    var dd  = date.getDate().toString();
-    -    var hh = date.getHours().toString();
-    -    var mi = date.getMinutes().toString();
-    -    var ss = date.getSeconds().toString();
-    -    var mmChars = mm.split('');
-    -    var ddChars = dd.split('');
-    -    var hhChars = hh.split('');
-    -    var miChars = mi.split('');
-    -    var ssChars = ss.split('');
-    -    return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]) + ' ' + (hhChars[1] ? hh : '0' + hhChars[0]) + ':' +  (miChars[1] ? mi : "0" + miChars[0]) + ':' + (ssChars[1] ? ss : '0' + ssChars[0]);
-    - }
-
-
     p(id="totalUsers")
 
     section
@@ -31,55 +12,6 @@ block content
             legend Docs tree
 
             div(id="doctreeContainer")
-                table(id="docTree")
-                    thead
-                        tr
-                            th Имя
-                            th Ссылка
-                            th Дата загрузки
-                            th Добавил
-                            th Дом. страница
-                    tbody
-                        - for (var x=0; x<docs.length; x++ ) {
-                        - var item = docs[x];
-                            tr(data-tt-id="#{item._id}", data-tt-parent-id="#{item.parent}", 
-                                data-originalname="#{item.originalFileName}", data-is-folder="#{item.isFolder}",
-                                data-fileName="#{item.fileName}")
-
-                                td 
-                                    -if (item.isFolder === true) {
-                                    span(class="folder")
-                                    -} else {
-                                    span(class="file") 
-                                    -}
-                                    != item.name
-
-                                td
-                                    -if (item.fileName == undefined) {
-                                    a(style="color: #b03b0f") #{item.fileName}
-                                    -} else {
-                                    a(href="#{item.fileName}", style="color: #b03b0f") #{item.fileName}
-                                    -}
-
-                                td
-                                    - var fdate = convertDate(item.createDate);
-                                    p #{fdate}
-
-                                td
-                                    -if(item && ('user' in item) && ('email' in item.user)) {
-                                    p(class="text-danger") #{item.user['email']}
-                                    -} else {
-                                    p -
-                                    -}
-
-                                td
-                                    -if(docs[x].isHome === undefined || docs[x].isHome === false) {
-                                    input(type="checkbox", disabled="disabled")
-                                    -} else {
-                                    input(type="checkbox", disabled="disabled", checked="checked")
-                                    -}
-                        - }
-
 
             form(id="uploadForm", enctype="multipart/form-data", action="/api/protected/journal/upload", method="post")
                 div(hidden)
