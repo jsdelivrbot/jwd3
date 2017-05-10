@@ -74,11 +74,6 @@ module.exports = function (app) {
                 docs: queue
             });
         });
-
-
-        //res.render("doctree", {
-        //    roles: roles
-        //});
     });
 
     //get doc

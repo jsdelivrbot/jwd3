@@ -9,24 +9,23 @@ $(document).ready(function () {
         $('#totalUsers').html('Пользователей онлайн: ' + msg.totalClients);
     });
 
-    var loadDocData = function () {
-        $.ajax({
-            type: "POST",
-            dataType: "JSON",
-            url: "/api/doc",
-            success: function (data, textStatus, jqXHR) {
-                var doc = data.doc;
-                treeSettings(doc);
-            },
-            error: function (jqXHR, textStatus, error) {
-                console.info("err", error);
-            }
-        });
+    var refreshTree = function () {
+        location.reload();
+        /*$.ajax({
+        type: "GET",
+        //dataType: "JSON",
+        url: "/doctree",
+        success: function (data, textStatus, jqXHR) {
+        //var doc = data.doc;
+        //treeSettings(doc);
+        },
+        error: function (jqXHR, textStatus, error) {
+        console.info("err", error);
+        }
+        });*/
     };
 
-    loadDocData();
-
-    var treeSettings = function (doc) {
+    var treeSettings = function () {
         //tree
         $('#docTree').treetable({
             expandable: true,
@@ -53,6 +52,8 @@ $(document).ready(function () {
         });
 
     };
+
+    treeSettings();
 
     //DOC
     //upload(add file)
@@ -101,8 +102,8 @@ $(document).ready(function () {
                     //$("#status").empty().text(data.message);
                     $("#message").html(data.message);
 
-                    $('#docTree').remove();
-                    loadDocData();
+                    //$('#docTree').remove();
+                    refreshTree();
                 },
                 error: function (jqXHR, textStatus, error) {
                     console.info("err", error);
@@ -173,8 +174,8 @@ $(document).ready(function () {
                     $("#message").html(data.message);
                     //$("#status").empty().text(data.message);
 
-                    $('#docTree').remove();
-                    loadDocData();
+                    //$('#docTree').remove();
+                    refreshTree();
                 },
                 error: function (jqXHR, textStatus, error) {
                     console.info("err", error);
@@ -196,11 +197,14 @@ $(document).ready(function () {
             showLoaderOnConfirm: true
         },
         function () {
-            setTimeout(function () {
+            ajaxDel();
+
+            /*setTimeout(function () {
                 ajaxDel(function () {
                     swal("Файл удален");
+                    refreshTree();
                 });
-            }, 500);
+            }, 500);*/
         });
 
         return;
@@ -220,7 +224,7 @@ $(document).ready(function () {
 
         var originalname = $tr.attr('data-originalname');
 
-        var fileName = $tr.find('td.fileName').html();
+        var fileName = $tr.attr('data-fileName');
 
         $.fileDownload('/uploads/' + fileName);
 
@@ -245,8 +249,8 @@ $(document).ready(function () {
                 $("#message").empty().text(response.toString());
 
 
-                $('#docTree').remove();
-                loadDocData();
+                //$('#docTree').remove();
+                refreshTree();
             }
         });
         return false;

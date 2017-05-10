@@ -3,6 +3,25 @@
 extends layout
 
 block content
+    - function convertDate(date) {
+    -    if (date === undefined) {
+    -        return '';
+    -    }
+    -    var yyyy = date.getFullYear().toString();
+    -    var mm = (date.getMonth()+1).toString();
+    -    var dd  = date.getDate().toString();
+    -    var hh = date.getHours().toString();
+    -    var mi = date.getMinutes().toString();
+    -    var ss = date.getSeconds().toString();
+    -    var mmChars = mm.split('');
+    -    var ddChars = dd.split('');
+    -    var hhChars = hh.split('');
+    -    var miChars = mi.split('');
+    -    var ssChars = ss.split('');
+    -    return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]) + ' ' + (hhChars[1] ? hh : '0' + hhChars[0]) + ':' +  (miChars[1] ? mi : "0" + miChars[0]) + ':' + (ssChars[1] ? ss : '0' + ssChars[0]);
+    - }
+
+
     p(id="totalUsers")
 
     section
@@ -42,14 +61,15 @@ block content
                                     a(href="#{item.fileName}", style="color: #b03b0f") #{item.fileName}
                                     -}
 
-                                td 
-                                    p #{item.createDate}
+                                td
+                                    - var fdate = convertDate(item.createDate);
+                                    p #{fdate}
 
                                 td
                                     -if(item && ('user' in item) && ('email' in item.user)) {
                                     p(class="text-danger") #{item.user['email']}
                                     -} else {
-                                    p
+                                    p -
                                     -}
 
                                 td
