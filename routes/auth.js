@@ -32,8 +32,11 @@ module.exports = function (app) {
             });
             user.save(function (e, doc) {
                 if (e) {
-                    console.info(e.err);
-                    res.json({ success: false, message: 'Пользователь не создан' + e.err });
+                    if (e.code === 11000) {
+                        return res.json({ success: false, message: 'Такой пользователь уже существует' });
+                    }
+
+                    res.json({ success: false, message: 'Пользователь не создан. Ошибка' + e.code });
                 } else {
                     //console.info("user created. _id: ", doc._id);
                     //cookie = 1 day

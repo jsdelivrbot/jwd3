@@ -59,6 +59,7 @@ require("./models/User");
 require("./routes/auth")(app);
 require("./routes/index")(app);
 require("./routes/gridresult")(app);
+require("./routes/monitoring")(app);
 
 var server = http.createServer(app);
 
