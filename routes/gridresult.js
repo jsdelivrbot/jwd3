@@ -13,16 +13,16 @@ module.exports = function (app) {
             callback(null, './public/uploads');
         },
         filename: function (req, file, callback) {
-            callback(null, file.fieldname + '-' + Date.now()); //originalname
-            //callback(null, file.originalname); //originalname
+            callback(null, file.fieldname + '-' + Date.now());
         }
     });
     var upload = multer({
         storage: storage,
         fileFilter: function (req, file, callback) {
             var ext = path.extname(file.originalname);
+
             if (ext !== '.pdf') {
-                return callback(new Error('Only .pdf'))
+                return callback(new Error('Только .pdf'))
             }
 
             callback(null, true)
@@ -114,40 +114,83 @@ module.exports = function (app) {
             });
     });
 
-    //TODO jwtauth.authenticate не работает
     app.post('/api/protected/journal/upload', function (req, res, next) {
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 res.setHeader("Content-type", "text/html");
-                return res.end("Только .pdf");
+                return res.end(err.message);
             }
+
+            var oper = req.headers.oper;
+            var fileName = req.headers.filename;
+            var id = req.body.parentId;
 
             var file = req.file;
             var token = req.cookies.token;
             var decoded = jwtauth.decode(token);
             var userId = decoded.userId;
 
-            //save into db
-            var doc = new Journal({
-                name: file.originalname,
-                user: userId,
-                fileName: file.filename,
-                originalFileName: file.originalname,
-                parent: req.body.parentId,
-                createDate: new Date(),
-                isFolder: false
-            });
+            if (oper === "add") {
+                //save into db
+                var doc = new Journal({
+                    name: file.originalname,
+                    user: userId,
+                    fileName: file.filename,
+                    originalFileName: file.originalname,
+                    parent: id,
+                    createDate: new Date(),
+                    isFolder: false
+                });
+                doc.save();
 
-            doc.save();
+                res.setHeader("Content-type", "text/html");
+                return res.end("Документ добавлен");
+            };
 
-            res.setHeader("Content-type", "text/html");
-            res.end("Документ добавлен");
+            //console.info('old=', fileName, ', new=', req.file.filename);
+            if (oper == "edit") {
+                var newfile = './public/uploads/' + req.file.filename;
+                var oldfile = './public/uploads/' + fileName;
+
+                fs.unlink(oldfile, function (err) {
+                    if (err) {
+                        res.setHeader("Content-type", "text/html");
+                        return res.end("Произошла ошибка при удалении");
+                    }
+
+                    fs.rename(newfile, oldfile, function (err) {
+                        if (err) {
+                            console.info('err, ', err);
+                            res.setHeader("Content-type", "text/html");
+                            return res.end("Произошла ошибка при переименовании");
+                        }
+
+                        //save to db
+                        Journal.findOne({ _id: id }, function (err, doc) {
+                            if (err) {
+                                res.setHeader("Content-type", "text/html");
+                                return res.end("Произошла ошибка при поиске в бд");
+                            }
+
+                            doc['name'] = file.originalname;
+                            doc['originalFileName'] = file.originalname;
+                            doc['createDate'] = new Date();
+                            doc['user'] = userId;
+
+                            doc.save(function (err) {
+                                if (err) { 
+                                    res.setHeader("Content-type", "text/html");
+                                    return res.end("Произошла ошибка при сохранении в бд");
+                                }
+
+                                res.setHeader("Content-type", "text/html");
+                                return res.end("Документ обновлен");
+                            });
+                        });
+                    });
+                });
+            }
         });
-
-        //console.info('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-
-        //res.setHeader("Content-type", "text/html");
-        //res.end("Документ добавлен");
     });
 
     //del doc
@@ -170,7 +213,7 @@ module.exports = function (app) {
         res.send({ message: "Файл удален" });
     });
 
-    //ad doc folder
+    //add doc folder
     app.post('/api/protected/journal/add_folder', jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
         var userId = decoded.userId;
@@ -185,5 +228,26 @@ module.exports = function (app) {
         doc.save();
 
         res.send({ message: "Папка добавлена" });
+    });
+
+    //edit doc folder
+    app.post('/api/protected/journal/edit_folder', jwtauth.authenticate, function (req, res) {
+        var decoded = req.decoded;
+        var userId = decoded.userId;
+
+        Journal.findOne({ _id: req.body.id }, 'fileName')
+            .exec(function (err, data) {
+                if (err || data.length === 0) {
+                    return res.send({ message: "Произошла ошибка" });
+                }
+
+                data.name = req.body.name;
+                data.save(function (err) {
+                    if (err) {
+                        return res.send({ message: "Произошла ошибка" });
+                    }
+                    return res.send({ message: "Папка изменена" });
+                });
+            });
     });
 };

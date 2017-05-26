@@ -126,6 +126,8 @@ $(document).ready(function () {
         }
 
         $('#parentId').val(id);
+        $('#fileName').val('');
+        $('#fileOper').val('add');
         $('#hiddenSelectFile').click();
     });
 
@@ -191,6 +193,72 @@ $(document).ready(function () {
         });
 
         return false;
+    });
+
+    //edit file/folder
+    $('#editDoc').bind('click', function () {
+        var $tr = $('#docTree tr.selected');
+
+        if ($tr.length == 0) {
+            swal("Выберите файл");
+            console.info('not selected');
+            return;
+        }
+
+        var id = $tr.attr('data-tt-id');
+        var isFolder = $tr.attr('data-is-folder');
+        var fileName = $tr.attr('data-filename');
+
+        //folder
+        var editFolder = function (id, newName) {
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                data: {
+                    id: id,
+                    name: newName
+                },
+                url: "/api/protected/journal/edit_folder",
+                success: function (data, textStatus, jqXHR) {
+                    //$("#status").empty().text(data.message);
+                    $("#message").html(data.message);
+
+                    $('#docTree').remove();
+                    loadDocData();
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.info("err", error);
+                }
+            });
+        };
+
+        if (isFolder === "true") {
+            swal({
+                title: "Название папки",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: true,
+                animation: "slide-from-top",
+                inputPlaceholder: "Название папки"
+            },
+            function (inputValue) {
+                if (inputValue === false)
+                    return false;
+
+                if (inputValue === "") {
+                    swal.showInputError("Введите название папки");
+                    return false;
+                };
+                editFolder(id, inputValue);
+            });
+            return;
+        }
+
+        //file
+        $('#parentId').val(id);
+        $('#fileOper').val('edit');
+        $('#fileName').val(fileName);
+        $('#hiddenSelectFile').click();
     });
 
     //delete file
@@ -287,12 +355,16 @@ $(document).ready(function () {
 
     $('#uploadForm').submit(function () {
         $("#status").empty().text("File is uploading...");
+
         $(this).ajaxSubmit({
+            headers: {
+                oper: $('#fileOper').val(),
+                fileName: $('#fileName').val()
+            },
             error: function (xhr) {
                 status('Error: ' + xhr.status);
             },
             success: function (response) {
-                //$("#status").empty().text(response.toString());
                 $("#message").empty().text(response.toString());
 
 
