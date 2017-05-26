@@ -62,8 +62,11 @@ $(document).ready(function () {
             url: "/api/login",
             data: data,
             success: function (data, textStatus, jqXHR) {
-                //console.info("login success");
                 $message.html(data.message);
+
+                if (data.success === true) {
+                    window.location.href = '/';
+                }
                 //if (supportHtml5Storage && data.token) {
                 //    localStorage.setItem("token", data.token);
                 //}
