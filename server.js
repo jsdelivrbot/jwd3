@@ -50,6 +50,7 @@ mongoose.connect(conf.settings.database_url);
 //SCHEMA
 require("./models/Journal");
 require("./models/User");
+require("./models/Test");
 
 //ROUTING
 //app.get('*', function (req, res, next) {
