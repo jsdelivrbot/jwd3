@@ -4,6 +4,7 @@ var path = require('path');
 var multer = require('multer');
 var _ = require("../lib/underscore/underscore.js");
 var mongoose = require("mongoose");
+//var chalk = require('chalk');
 
 module.exports = function (app) {
 
@@ -13,6 +14,7 @@ module.exports = function (app) {
             callback(null, './public/uploads');
         },
         filename: function (req, file, callback) {
+            //console.info('file=', file);
             callback(null, file.fieldname + '-' + Date.now());
         }
     });
@@ -115,6 +117,7 @@ module.exports = function (app) {
     });
 
     app.post('/api/protected/journal/upload', function (req, res, next) {
+        //console.log(chalk.red(JSON.stringify(req.headers)));
         upload.single('doc')(req, res, function (err) {
             if (err) {
                 res.setHeader("Content-type", "text/html");
@@ -178,7 +181,7 @@ module.exports = function (app) {
                             doc['user'] = userId;
 
                             doc.save(function (err) {
-                                if (err) { 
+                                if (err) {
                                     res.setHeader("Content-type", "text/html");
                                     return res.end("Произошла ошибка при сохранении в бд");
                                 }
