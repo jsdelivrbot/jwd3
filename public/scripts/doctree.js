@@ -50,15 +50,16 @@ $(document).ready(function () {
                 '" data-originalname="' + currentDoc.originalFileName +
                 '" data-is-folder="' + currentDoc.isFolder +
                 '" data-fileName="' + currentDoc.fileName +
+                '" data-journalType="' + currentDoc.journalType +
                 '">';
 
             tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
 
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
-            tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
+            tmp = (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
             tmp += '>';
-            tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
+            tmp += (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : currentDoc.fileName;
             bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
 
             tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
@@ -83,6 +84,7 @@ $(document).ready(function () {
         $('#docTree').treetable({
             expandable: true,
             initialState: 'expanded',
+            //initialState: 'collapsed',
             onNodeExpand: function () {
                 //
 
@@ -272,7 +274,7 @@ $(document).ready(function () {
         }
 
         var id = $tr.attr('data-tt-id');
-        var fileName = $tr.find('td.fileName').html();
+        var fileName = $tr.attr('data-filename');
 
         var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
         if (children.length !== 0) {
@@ -291,8 +293,6 @@ $(document).ready(function () {
                 url: "/api/protected/journal/del",
                 success: function (data, textStatus, jqXHR) {
                     $("#message").html(data.message);
-                    //$("#status").empty().text(data.message);
-
                     $('#docTree').remove();
                     loadDocData();
                 },

@@ -16,6 +16,7 @@ var Journal = new Schema({
         ref: 'User'
     },
     isFolder: Boolean,
-    isHome: Boolean
+    isHome: Boolean,
+    journalType: Number
 });
 mongoose.model("Journal", Journal);

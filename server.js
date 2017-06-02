@@ -19,10 +19,7 @@ app.set("views", __dirname + "/views");
 app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(express.json());
-
 app.use(bodyParser.json());//parsing post body
-//app.use(bodyParser.raw({}));//parsing post body
-
 app.use(express.methodOverride());//put, delete, connect....
 app.use(express.urlencoded());
 
@@ -65,7 +62,6 @@ mongoose.connect(conf.settings.database_url);
 //SCHEMA
 require("./models/Journal");
 require("./models/User");
-require("./models/Test");
 
 //ROUTING
 //app.get('*', function (req, res, next) {

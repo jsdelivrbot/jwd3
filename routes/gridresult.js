@@ -48,18 +48,18 @@ module.exports = function (app) {
     app.post("/api/doc", jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
         var userId = decoded.userId;
-
-        var root = {
-            _id: '000000000000000000000001',
-            name: 'root',
-            parent: null,
-            isFolder: true
-        };
+        
 
         Journal.find({}).populate('user', 'email').exec(function (err, docs) {
             //TODO оптимизировать
             var queue = [];
-            var currentNode;
+            var getRecursive = function (node) {
+                var children = getChildren(node['_id']);
+                for (var x = 0; x < children.length; x++) {
+                    queue.push(children[x]);
+                    getRecursive(children[x]);
+                }
+            };
             var getChildren = function (parent_id) {
                 var children = _.filter(docs, function (item) {
                     var isEquals = new String(item['parent']).valueOf() == new String(parent_id).valueOf();
@@ -69,18 +69,26 @@ module.exports = function (app) {
                 return children;
             };
 
-            queue.push(root);
-
-            //children
-            var getRecursive = function (node) {
-                var children = getChildren(node['_id']);
-                for (var x = 0; x < children.length; x++) {
-                    queue.push(children[x]);
-                    getRecursive(children[x]);
-                }
+            //doc
+            //TODO убрать это говно в upsert
+            var docRoot = {
+                _id: '000000000000000000000001',
+                name: 'Документы',
+                parent: null,
+                isFolder: true
             };
+            queue.push(docRoot);
+            getRecursive(docRoot);
 
-            getRecursive(root);
+            //log
+            var logRoot = {
+                _id: '000000000000000000000002',
+                name: 'Логи',
+                parent: null,
+                isFolder: true
+            };
+            queue.push(logRoot);
+            getRecursive(logRoot);
 
             res.send({ doc: queue });
         });
@@ -142,7 +150,8 @@ module.exports = function (app) {
                     originalFileName: file.originalname,
                     parent: id,
                     createDate: new Date(),
-                    isFolder: false
+                    isFolder: false,
+                    journalType: 0
                 });
                 doc.save();
 

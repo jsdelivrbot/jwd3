@@ -17,33 +17,42 @@ module.exports = function (app) {
     var upload = multer({
         storage: storage,
         fileFilter: function (req, file, callback) {
-            var ext = path.extname(file.originalname);
             callback(null, true)
         }
     });
 
-    var Test = mongoose.model("Test");
+    //var Test = mongoose.model("Test");
+    var Journal = mongoose.model("Journal");
 
     app.post("/upload_log", function (req, res) {
         upload.any()(req, res, function (err) {
             if (err) {
-                console.log(chalk.red('error upload'));
+                console.log(chalk.red('error upload. ', err.messag));
                 res.setHeader("Content-type", "text/html");
                 return res.end(err.message);
             }
 
+            var files = req.files;
+            //console.log(chalk.green('body=', JSON.stringify(req.body)));
+            //console.log(chalk.green('params=', JSON.stringify(req.files)));
+
+            //1 file
+            var file = files[0];
+
+            var doc = new Journal({
+                name: file.originalname,
+                //user: userId,
+                fileName: file.filename,
+                originalFileName: file.originalname,
+                parent: '000000000000000000000002',
+                createDate: new Date(),
+                isFolder: false,
+                journalType: 1
+            });
+            doc.save();
+
             res.setHeader("Content-type", "text/html");
             return res.end('successfully upload');
         });
-
-        /*var test = new Test({
-        createDate: new Date()
-        });
-        test.save(function (err) {
-        if (err)
-        return res.send('POST failed to save into db');
-
-        return res.send('POST successfulled');
-        });*/
     });
 };
