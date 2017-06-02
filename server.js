@@ -8,6 +8,7 @@ var mongoose = require("mongoose");
 var conf = require("./conf");
 var cors = require("cors");
 var chalk = require('chalk');
+var sitePreload = require('../lib/site-preload');
 
 var app = express();
 
@@ -67,6 +68,8 @@ require("./models/User");
 //app.get('*', function (req, res, next) {
 //    return next();
 //});
+
+sitePreload.check(app);
 
 require("./routes/auth")(app);
 require("./routes/index")(app);

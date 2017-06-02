@@ -45,4 +45,7 @@ jspm_packages
 # for testing
 
 testing
+
+public/uploads
+
 /iisnode
