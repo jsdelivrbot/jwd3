@@ -7,6 +7,7 @@ var mongodb = require("mongodb");
 var mongoose = require("mongoose");
 var conf = require("./conf");
 var cors = require("cors");
+var chalk = require('chalk');
 
 var app = express();
 
@@ -19,16 +20,27 @@ app.set('view engine', 'jade');
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(express.json());
 app.use(bodyParser.json());//parsing post body
-//app.use(express.methodOverride());//put, delete, connect....
+app.use(express.methodOverride());//put, delete, connect....
 app.use(express.urlencoded());
 
 app.use(express.cookieParser());
+
 app.use(express.session({
     secret: "ggf54",
     key: "sid",
     cookie: {httpOnly: false}//false - accessible into document.cookie...
 }));
-app.use(express.csrf());
+
+function csrfConf(fn) {
+    return function (req, res, next) {
+        if (req.path === '/upload_log' && req.method === 'POST') {//this url without csrf...........
+            fn(req, res, next);
+        } else {
+            next();
+        }
+    }
+};
+app.use(csrfConf(express.csrf()));
 app.use(function (req, res, next) {
     res.locals.csrftoken = req.session._csrf;
     next();
@@ -42,18 +54,24 @@ app.disable('x-powered-by');
 var db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function() {
-    console.log("connected to db");
+    console.log(chalk.green("database is opened"));
 });
+
 mongoose.connect(conf.settings.database_url);
+
+//SCHEMA
+require("./models/Journal");
+require("./models/User");
 
 //ROUTING
 //app.get('*', function (req, res, next) {
 //    return next();
 //});
 
-require("./routes/auth")(app, mongoose);
+require("./routes/auth")(app);
 require("./routes/index")(app);
-require("./routes/gridresult")(app, mongoose);
+require("./routes/gridresult")(app);
+require("./routes/monitoring")(app);
 
 var server = http.createServer(app);
 
@@ -71,5 +89,5 @@ io.on('connection', function (socket) {
 
 
 server.listen(app.get("port"), function () {
-    console.info("listen on port: " + app.get("port"));
+    console.log(chalk.green("listen on port: " + app.get("port")));
 });

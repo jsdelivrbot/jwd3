@@ -62,8 +62,11 @@ $(document).ready(function () {
             url: "/api/login",
             data: data,
             success: function (data, textStatus, jqXHR) {
-                //console.info("login success");
                 $message.html(data.message);
+
+                if (data.success === true) {
+                    window.location.href = '/';
+                }
                 //if (supportHtml5Storage && data.token) {
                 //    localStorage.setItem("token", data.token);
                 //}
@@ -120,9 +123,17 @@ $(document).ready(function () {
 
     var setLoginName = function () {
         var token = getCookie('token');
+
+        if (token === undefined) {
+            $('#logoutBtn').hide();
+            $('#loggedUser').html('Вход не выполнен');
+            return;
+        }
+
+        $('#logoutBtn').show();
         var parsedToken = parseJwt(token);
         var email = parsedToken.email;
-        var text = (email === undefined) ? '' : 'Вход выполнен, ' + email;
+        var text = (email === undefined) ? 'Вход не выполнен' : 'Вход выполнен, ' + email;
 
         $('#loggedUser').html(text);
     };

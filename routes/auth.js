@@ -1,9 +1,9 @@
 var crypto = require("crypto");
 var jwtauth = require("../lib/jwtauth");
-//var User = require("../models/User");
+var mongoose = require("mongoose");
 
-module.exports = function (app, mongoose) {
-    var User = require("../models/User")(mongoose);
+module.exports = function (app) {
+    var User = mongoose.model("User");
 
     //***********************************************************
     //**********************register*****************************
@@ -32,8 +32,11 @@ module.exports = function (app, mongoose) {
             });
             user.save(function (e, doc) {
                 if (e) {
-                    console.info(e.err);
-                    res.json({ success: false, message: 'user not created. ' + e.err });
+                    if (e.code === 11000) {
+                        return res.json({ success: false, message: 'Такой пользователь уже существует' });
+                    }
+
+                    res.json({ success: false, message: 'Пользователь не создан. Ошибка' + e.code });
                 } else {
                     //console.info("user created. _id: ", doc._id);
                     //cookie = 1 day
@@ -44,11 +47,11 @@ module.exports = function (app, mongoose) {
                     };
                     var token = jwtauth.sign(payload);
                     res.cookie("token", token, { maxAge: 1 * 24 * 3600000, httpOnly: false }); //httpOnly = true -> can't read with document.cookie
-                    res.json({ success: true, message: 'user created. ' });
+                    res.json({ success: true, message: 'Пользователь создан' });
                 }
             });
         } else {
-            res.json({ success: false, message: 'enter correct login and password' });
+            res.json({ success: false, message: 'Введите корректный логин и пароль' });
         }
     });
 
@@ -67,10 +70,10 @@ module.exports = function (app, mongoose) {
             //find user
             User.findOne({ email: login }, function (err, docLogin) {
                 if (err) {
-                    res.json({ success: false, message: 'user not found' });
+                    res.json({ success: false, message: 'Пользователь не найден' });
                 } else {
                     if (docLogin === null) {
-                        res.json({ success: false, message: 'user not found' });
+                        res.json({ success: false, message: 'Пользователь не найден' });
                     } else {
                         var salt = docLogin.salt;
                         var dbHash = crypto.pbkdf2Sync(password, salt, 10000, 512).toString("hex");
@@ -84,16 +87,16 @@ module.exports = function (app, mongoose) {
                             var token = jwtauth.sign(payload);
                             //cookie = 1 day
                             res.cookie('token', token, { maxAge: 1 * 24 * 3600000, httpOnly: false }); //httpOnly = true -> can't read with document.cookie
-                            res.json({ success: true, message: 'user logged' });
+                            res.json({ success: true, message: 'Вход выполнен' });
                         } else {
-                            res.json({ success: false, message: 'password is wrong' });
+                            res.json({ success: false, message: 'Неверный пароль' });
                         }
                     }
 
                 }
             });
         } else {
-            res.json({ success: false, message: 'authentication failed' });
+            res.json({ success: false, message: 'Вход не выполнен' });
         }
     });
 
@@ -103,7 +106,7 @@ module.exports = function (app, mongoose) {
     //***********************************************************
     app.post("/api/logout", function (req, res, next) {
         res.clearCookie('token');
-        res.json({ success: true, message: 'user logout' });
+        res.json({ success: true, message: 'Пользователь вышел' });
         //res.redirect("/401");
     });
 };

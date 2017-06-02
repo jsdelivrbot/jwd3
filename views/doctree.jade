@@ -1,3 +1,5 @@
+
+
 extends layout
 
 block content
@@ -5,9 +7,9 @@ block content
 
     section
         hgroup
-            h1 Docs tree
+            h1 Документы
         fieldset
-            legend Docs tree
+            //legend Docs tree
 
             div(id="doctreeContainer")
 
@@ -16,11 +18,14 @@ block content
                     input(type="file", name="doc", id="hiddenSelectFile", accept=".pdf")
                     input(type="submit", name="submit", value="upload doc")
                     input(id="parentId", type="text", name="parentId")
+                    input(id="fileOper", type="text", name="fileOper")
+                    input(id="fileName", type="text", name="fileName")
                 
                 div
                     -if ( roles && roles.indexOf("admin") !== -1 ) {
                         input(id="addFolderDoc", type="button", class="btn btn-primary has-margin", value="Добавить папку")
                         input(id="addDoc", type="button", class="btn btn-primary has-margin", value="Добавить файл")
+                        input(id="editDoc", type="button", class="btn btn-primary has-margin", value="Изменить файл")
                         input(id="delDoc", type="button", class="btn btn-danger has-margin", value="Удалить файл")
                     - }
                     input(id="downloadDoc", type="button", class="btn btn-success has-margin", value="Скачать")
@@ -28,15 +33,9 @@ block content
 
 
     input(id="csrftoken", type="hidden", value="#{csrftoken}")
-
-    //section(id="docTreeSection")
-    //    hgroup
-    //        h1 doc tree
-            
-    //    fieldset
-    //        legend doc tree
+    
     div(id="pdfDiv")        
-        div(id="pdfPage", style="position: fixed")
+        div(id="pdfPage")
         div(id="docContainer", class="pdf-content")
             canvas(id="pdfCanvas")
             div(id="ldiv")
@@ -59,6 +58,12 @@ block content
 
     script(src="/libs/underscore/underscore.js")
     script(src="/socket.io/socket.io.js")
+
+
+    script(src="/libs/pdfjs/pdf.js")
+    script(src="/libs/pdfjs-dist/web/compatibility.js")
+    script(src="/libs/pdfjs-dist/build/pdf.combined.js")
+    script(src="/libs/pdfjs-dist/web/pdf_viewer.js")
 
     script(src="/scripts/doctree.js")
 

@@ -1,21 +1,22 @@
-module.exports = function (mongoose) {
-    //journal model
-    var journalSchema = new mongoose.Schema({
-        parent: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Journal'
-        },
-        name: String,
-        fileName: String,
-        originalFileName: String,
-        createDate: Date,
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        isFolder: Boolean
-    });
-    var Journal = mongoose.model('Journal', journalSchema);
+var mongoose = require("mongoose");
 
-    return Journal;
-}
+
+var Schema = mongoose.Schema;
+var Journal = new Schema({
+    parent: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Journal'
+    },
+    name: String,
+    fileName: String,
+    originalFileName: String,
+    createDate: Date,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    isFolder: Boolean,
+    isHome: Boolean,
+    journalType: Number
+});
+mongoose.model("Journal", Journal);

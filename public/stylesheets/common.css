@@ -65,6 +65,8 @@ div[readonly] {
 
 .layoutMessage {
     color: #f00d06;
+    font-style:  italic;
+    font-weight: bold;
 }
 
 #wcfAddress, #imageAddress {
@@ -73,4 +75,8 @@ div[readonly] {
 
 #logging {
     display: none;
+}
+
+#pdfPage {
+    margin: 5px;
 }

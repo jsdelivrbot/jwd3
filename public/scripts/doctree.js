@@ -33,7 +33,7 @@ $(document).ready(function () {
         tableText += '<th>Ссылка</th>';
         tableText += '<th>Дата загрузки</th>';
         tableText += '<th>Добавил</th>';
-        tableText += '<th style="display: none">Имя файла в базе</th>';
+        tableText += '<th>Дом. страница</th>';
         tableText += '</tr></thead>';
 
         var bodytext = '<tbody>';
@@ -42,19 +42,24 @@ $(document).ready(function () {
 
         for (var x = 0; x < doc.length; x++) {
             currentDoc = doc[x];
+            //console.info(currentDoc);
+
+
             bodytext += '<tr data-tt-id="' + currentDoc._id +
                 '" data-tt-parent-id="' + currentDoc.parent +
                 '" data-originalname="' + currentDoc.originalFileName +
                 '" data-is-folder="' + currentDoc.isFolder +
+                '" data-fileName="' + currentDoc.fileName +
+                '" data-journalType="' + currentDoc.journalType +
                 '">';
 
             tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
 
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
-            tmp = (currentDoc.fileName === undefined) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
+            tmp = (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
             tmp += '>';
-            tmp += (currentDoc.fileName === undefined) ? "" : currentDoc.fileName;
+            tmp += (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : currentDoc.fileName;
             bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
 
             tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
@@ -63,8 +68,7 @@ $(document).ready(function () {
             tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
             bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
-
-            bodytext += '<td class="fileName" style="display: none">' + currentDoc.fileName + '</td>';
+            bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
             bodytext += '</tr>'
         }
         bodytext += '</tbody></table>';
@@ -80,6 +84,7 @@ $(document).ready(function () {
         $('#docTree').treetable({
             expandable: true,
             initialState: 'expanded',
+            //initialState: 'collapsed',
             onNodeExpand: function () {
                 //
 
@@ -94,10 +99,10 @@ $(document).ready(function () {
 
         //double click
         $('#docTree tr').dblclick(function () {
-            var name = $(this).find('td.fileName').html(); //attr('data-is-folder'); // find('td.fileName').html();
+            var name = $(this).attr('data-fileName');
             var isFolder = $(this).attr('data-is-folder');
 
-            if (isFolder == 'false')//name != "undefined" && name !== "")
+            if (isFolder == 'false')
                 docView(name); //utils.js
         });
 
@@ -123,6 +128,8 @@ $(document).ready(function () {
         }
 
         $('#parentId').val(id);
+        $('#fileName').val('');
+        $('#fileOper').val('add');
         $('#hiddenSelectFile').click();
     });
 
@@ -190,6 +197,72 @@ $(document).ready(function () {
         return false;
     });
 
+    //edit file/folder
+    $('#editDoc').bind('click', function () {
+        var $tr = $('#docTree tr.selected');
+
+        if ($tr.length == 0) {
+            swal("Выберите файл");
+            console.info('not selected');
+            return;
+        }
+
+        var id = $tr.attr('data-tt-id');
+        var isFolder = $tr.attr('data-is-folder');
+        var fileName = $tr.attr('data-filename');
+
+        //folder
+        var editFolder = function (id, newName) {
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                data: {
+                    id: id,
+                    name: newName
+                },
+                url: "/api/protected/journal/edit_folder",
+                success: function (data, textStatus, jqXHR) {
+                    //$("#status").empty().text(data.message);
+                    $("#message").html(data.message);
+
+                    $('#docTree').remove();
+                    loadDocData();
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.info("err", error);
+                }
+            });
+        };
+
+        if (isFolder === "true") {
+            swal({
+                title: "Название папки",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: true,
+                animation: "slide-from-top",
+                inputPlaceholder: "Название папки"
+            },
+            function (inputValue) {
+                if (inputValue === false)
+                    return false;
+
+                if (inputValue === "") {
+                    swal.showInputError("Введите название папки");
+                    return false;
+                };
+                editFolder(id, inputValue);
+            });
+            return;
+        }
+
+        //file
+        $('#parentId').val(id);
+        $('#fileOper').val('edit');
+        $('#fileName').val(fileName);
+        $('#hiddenSelectFile').click();
+    });
+
     //delete file
     $('#delDoc').bind('click', function () {
         var $tr = $('#docTree tr.selected');
@@ -201,7 +274,7 @@ $(document).ready(function () {
         }
 
         var id = $tr.attr('data-tt-id');
-        var fileName = $tr.find('td.fileName').html();
+        var fileName = $tr.attr('data-filename');
 
         var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
         if (children.length !== 0) {
@@ -220,8 +293,6 @@ $(document).ready(function () {
                 url: "/api/protected/journal/del",
                 success: function (data, textStatus, jqXHR) {
                     $("#message").html(data.message);
-                    //$("#status").empty().text(data.message);
-
                     $('#docTree').remove();
                     loadDocData();
                 },
@@ -268,8 +339,7 @@ $(document).ready(function () {
         }
 
         var originalname = $tr.attr('data-originalname');
-
-        var fileName = $tr.find('td.fileName').html();
+        var fileName = $tr.attr('data-fileName');
 
         $.fileDownload('/uploads/' + fileName);
 
@@ -285,14 +355,18 @@ $(document).ready(function () {
 
     $('#uploadForm').submit(function () {
         $("#status").empty().text("File is uploading...");
+
         $(this).ajaxSubmit({
+            headers: {
+                oper: $('#fileOper').val(),
+                fileName: $('#fileName').val()
+            },
             error: function (xhr) {
                 status('Error: ' + xhr.status);
             },
             success: function (response) {
-                //$("#status").empty().text(response.toString());
                 $("#message").empty().text(response.toString());
-                
+
 
                 $('#docTree').remove();
                 loadDocData();
@@ -301,25 +375,18 @@ $(document).ready(function () {
         return false;
     });
 
-    var h_hght = 500; //высота шапки
-    var h_mrg = 3; //отступ когда шапка уже не видна
-
     $(function () {
         var elem = $('#pdfPage');
-        var top = $(this).scrollTop();
-
-        if (top > h_hght) {
-            elem.css('top', h_mrg);
-        }
+        var rect;
 
         $(window).scroll(_.throttle(function () {
-            //var rect = document.getElementById('pdfDiv').getBoundingClientRect();
-            top = $(this).scrollTop();
+            rect = document.getElementById('pdfDiv').getBoundingClientRect();
 
-            if (top + h_mrg < h_hght) {
-                elem.css('top', (h_hght - top));
+            if (rect.top < 0) {
+                elem.css('top', 5);
+                elem.css('position', 'fixed');
             } else {
-                elem.css('top', h_mrg);
+                elem.css('position', 'initial');
             }
         }, 160));
     });
