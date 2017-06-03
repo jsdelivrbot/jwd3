@@ -44,15 +44,21 @@ module.exports = function (app) {
                 //user: userId,
                 fileName: file.filename,
                 originalFileName: file.originalname,
-                parent: '000000000000000000000002',
+                parent: global.logRootId,
                 createDate: new Date(),
                 isFolder: false,
-                journalType: 1
+                journalType: 1,
+                isReadonly: true
             });
-            doc.save();
+            doc.save(function (err) {
+                if (err) { 
+                    res.setHeader("Content-type", "text/html");
+                    return res.end('error on save into db');
+                }
 
-            res.setHeader("Content-type", "text/html");
-            return res.end('successfully upload');
+                res.setHeader("Content-type", "text/html");
+                return res.end('successfully upload');
+            });
         });
     });
 };

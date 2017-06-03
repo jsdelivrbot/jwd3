@@ -4,7 +4,7 @@ var path = require('path');
 var multer = require('multer');
 var _ = require("../lib/underscore/underscore.js");
 var mongoose = require("mongoose");
-//var chalk = require('chalk');
+var chalk = require('chalk');
 
 module.exports = function (app) {
 
@@ -48,49 +48,9 @@ module.exports = function (app) {
     app.post("/api/doc", jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
         var userId = decoded.userId;
-        
 
-        Journal.find({}).populate('user', 'email').exec(function (err, docs) {
-            //TODO оптимизировать
-            var queue = [];
-            var getRecursive = function (node) {
-                var children = getChildren(node['_id']);
-                for (var x = 0; x < children.length; x++) {
-                    queue.push(children[x]);
-                    getRecursive(children[x]);
-                }
-            };
-            var getChildren = function (parent_id) {
-                var children = _.filter(docs, function (item) {
-                    var isEquals = new String(item['parent']).valueOf() == new String(parent_id).valueOf();
-                    return isEquals;
-                });
-
-                return children;
-            };
-
-            //doc
-            //TODO убрать это говно в upsert
-            var docRoot = {
-                _id: '000000000000000000000001',
-                name: 'Документы',
-                parent: null,
-                isFolder: true
-            };
-            queue.push(docRoot);
-            getRecursive(docRoot);
-
-            //log
-            var logRoot = {
-                _id: '000000000000000000000002',
-                name: 'Логи',
-                parent: null,
-                isFolder: true
-            };
-            queue.push(logRoot);
-            getRecursive(logRoot);
-
-            res.send({ doc: queue });
+        mongoose.connection.db.eval("getNodeHierarchy()", function (err, docs) {
+            res.send({ doc: docs });
         });
     });
 
@@ -151,12 +111,18 @@ module.exports = function (app) {
                     parent: id,
                     createDate: new Date(),
                     isFolder: false,
-                    journalType: 0
+                    journalType: 0,
+                    isReadonly: false
                 });
-                doc.save();
+                doc.save(function (err) {
+                    if (err) {
+                        res.setHeader("Content-type", "text/html");
+                        return res.end("Ошибка при сохранении в бд");
+                    }
 
-                res.setHeader("Content-type", "text/html");
-                return res.end("Документ добавлен");
+                    res.setHeader("Content-type", "text/html");
+                    return res.end("Документ добавлен");
+                });
             };
 
             //console.info('old=', fileName, ', new=', req.file.filename);
@@ -207,13 +173,27 @@ module.exports = function (app) {
 
     //del doc
     app.post('/api/protected/journal/del', jwtauth.authenticate, function (req, res) {
-        Journal.findOne({ _id: req.body.id }, function (err, doc) {
-            doc.remove(function (err, doc) {
+        Journal.findOne({ _id: req.body.id }, function (err, data) {
+            if (err || data.length === 0) {
+                return res.send({ success: false, message: "Произошла ошибка. Файл не найден" });
+            }
+
+            if (('isReadonly' in data) && data['isReadonly']) {
+                return res.send({ message: "Нельзя удалить", success: false });
+            }
+
+            data.remove(function (err, data) {
                 var fileName = req.body.fileName;
                 fs.exists('./public/uploads/' + fileName, function (exists) {
                     if (exists) {
-                        console.log('file deleted');
-                        fs.unlink('./public/uploads/' + fileName);
+                        fs.unlink('./public/uploads/' + fileName, function (err) {
+                            if (err) {
+                                return res.send({ message: "Ошибка при удалении", success: false });
+                            }
+
+                            console.log(chalk.red('file deleted'));
+                            return res.send({ message: "Файл удален", success: true });
+                        });
                     } else {
                         console.log('file not exists');
                     }
@@ -221,8 +201,6 @@ module.exports = function (app) {
                 });
             });
         });
-
-        res.send({ message: "Файл удален" });
     });
 
     //add doc folder
@@ -235,11 +213,16 @@ module.exports = function (app) {
             user: userId,
             parent: req.body.parent_id,
             createDate: new Date(),
-            isFolder: true
+            isFolder: true,
+            isReadonly: false
         });
-        doc.save();
+        doc.save(function (err) {
+            if (err) {
+                res.send({ message: "Ошибка при добавлении папки" });
+            }
 
-        res.send({ message: "Папка добавлена" });
+            res.send({ message: "Папка добавлена" });
+        });
     });
 
     //edit doc folder
@@ -247,10 +230,14 @@ module.exports = function (app) {
         var decoded = req.decoded;
         var userId = decoded.userId;
 
-        Journal.findOne({ _id: req.body.id }, 'fileName')
+        Journal.findOne({ _id: req.body.id })
             .exec(function (err, data) {
                 if (err || data.length === 0) {
-                    return res.send({ message: "Произошла ошибка" });
+                    return res.send({ message: "Произошла ошибка. Файл не найден" });
+                }
+
+                if (('isReadonly' in data) && data['isReadonly']) {
+                    return res.send({ message: "Нельзя редактировать" });
                 }
 
                 data.name = req.body.name;

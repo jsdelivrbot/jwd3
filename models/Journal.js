@@ -17,6 +17,7 @@ var Journal = new Schema({
     },
     isFolder: Boolean,
     isHome: Boolean,
-    journalType: Number
+    journalType: Number,
+    isReadonly: Boolean
 });
 mongoose.model("Journal", Journal);

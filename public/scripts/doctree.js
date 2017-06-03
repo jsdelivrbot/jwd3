@@ -48,9 +48,10 @@ $(document).ready(function () {
             bodytext += '<tr data-tt-id="' + currentDoc._id +
                 '" data-tt-parent-id="' + currentDoc.parent +
                 '" data-originalname="' + currentDoc.originalFileName +
-                '" data-is-folder="' + currentDoc.isFolder +
-                '" data-fileName="' + currentDoc.fileName +
-                '" data-journalType="' + currentDoc.journalType +
+                '" data-isfolder="' + currentDoc.isFolder +
+                '" data-filename="' + currentDoc.fileName +
+                '" data-journaltype="' + currentDoc.journalType +
+                '" data-isreadonly="' + currentDoc.isReadonly +
                 '">';
 
             tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
@@ -60,12 +61,12 @@ $(document).ready(function () {
             tmp = (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
             tmp += '>';
             tmp += (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : currentDoc.fileName;
-            bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>';
+            bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>'; //href
 
             tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
             bodytext += '<td><p>' + tmp + '</p></td>';
 
-            tmp = (currentDoc.user === undefined || currentDoc.user === null) ? "" : currentDoc.user['email'];
+            tmp = (currentDoc.user === undefined || currentDoc.user === null || currentDoc.user.length === 0) ? "" : currentDoc.user[0]['email'];
             bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
             bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
@@ -100,7 +101,7 @@ $(document).ready(function () {
         //double click
         $('#docTree tr').dblclick(function () {
             var name = $(this).attr('data-fileName');
-            var isFolder = $(this).attr('data-is-folder');
+            var isFolder = $(this).attr('data-isfolder');
 
             if (isFolder == 'false')
                 docView(name); //utils.js
@@ -120,7 +121,13 @@ $(document).ready(function () {
         }
 
         var id = $tr.attr('data-tt-id');
-        var isFolder = $tr.attr('data-is-folder');
+        var isFolder = $tr.attr('data-isfolder');
+        var isReadonly = $tr.attr('data-isreadonly');
+
+        if (isReadonly === "true") {
+            swal('Нельзя добавить');
+            return;
+        }
 
         if (isFolder === "false") {
             swal('Выберите папку');
@@ -137,7 +144,13 @@ $(document).ready(function () {
     $('#addFolderDoc').bind('click', function () {
         //TODO recursive del?
         var $tr = $('#docTree tr.selected');
-        var isFolder = $tr.attr('data-is-folder');
+        var isFolder = $tr.attr('data-isfolder');
+        var isReadonly = $tr.attr('data-isreadonly');
+
+        if (isReadonly === "true") {
+            swal('Нельзя добавить');
+            return;
+        }
 
         if (isFolder === "false") {
             swal('Выберите папку');
@@ -208,7 +221,8 @@ $(document).ready(function () {
         }
 
         var id = $tr.attr('data-tt-id');
-        var isFolder = $tr.attr('data-is-folder');
+        var isFolder = $tr.attr('data-isfolder');
+        var isReadonly = $tr.attr('data-isreadonly');
         var fileName = $tr.attr('data-filename');
 
         //folder
@@ -233,6 +247,11 @@ $(document).ready(function () {
                 }
             });
         };
+
+        if (isReadonly === "true") {
+            swal('Нельзя редактировать');
+            return;
+        }
 
         if (isFolder === "true") {
             swal({
@@ -275,6 +294,13 @@ $(document).ready(function () {
 
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.attr('data-filename');
+        var isReadonly = $tr.attr('data-isreadonly');
+
+        if (isReadonly === 'true') {
+            swal('Нельзя удалить');
+            return;
+        }
+
 
         var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
         if (children.length !== 0) {
@@ -331,9 +357,9 @@ $(document).ready(function () {
     //download
     $('#downloadDoc').bind('click', function () {
         var $tr = $('#docTree tr.selected');
+        var isFolder = $tr.attr('data-isfolder');
 
-        if ($tr.length == 0) {
-            console.info('not selected');
+        if ($tr.length == 0 || isFolder === "true") {
             swal("Выберите файл");
             return;
         }
