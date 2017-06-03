@@ -10,7 +10,6 @@ module.exports = function (app) {
             callback(null, './public/uploads');
         },
         filename: function (req, file, callback) {
-            console.info('file=', file);
             callback(null, 'log' + '-' + Date.now());
         }
     });
@@ -27,17 +26,29 @@ module.exports = function (app) {
     app.post("/upload_log", function (req, res) {
         upload.any()(req, res, function (err) {
             if (err) {
-                console.log(chalk.red('error upload. ', err.messag));
+                console.log(chalk.red('error upload. ', err.message));
                 res.setHeader("Content-type", "text/html");
                 return res.end(err.message);
             }
 
-            var files = req.files;
-            //console.log(chalk.green('body=', JSON.stringify(req.body)));
-            //console.log(chalk.green('params=', JSON.stringify(req.files)));
+            //console.log(chalk.yelow(JSON.stringify(req.headers)));
+            //console.log(chalk.green('received log file'));
+            //console.log(chalk.green(JSON.stringify(req.body.params)));
+
+            console.log(chalk.green(JSON.stringify(JSON.parse(req.body.params))));
 
             //1 file
+            var files = req.files;
+            var reqParams = JSON.parse(req.body.params);
+
+            if (!files || files.length === 0) {
+                console.log(chalk.red('error get files'));
+                res.setHeader("Content-type", "text/html");
+                return res.end('files is null');
+            }
+
             var file = files[0];
+            console.log(chalk.cyan(JSON.stringify(file)));
 
             var doc = new Journal({
                 name: file.originalname,
@@ -48,10 +59,13 @@ module.exports = function (app) {
                 createDate: new Date(),
                 isFolder: false,
                 journalType: 1,
-                isReadonly: true
+                isReadonly: true,
+                uid: reqParams.uid,
+                sn: reqParams.sn,
+                note: reqParams.note
             });
             doc.save(function (err) {
-                if (err) { 
+                if (err) {
                     res.setHeader("Content-type", "text/html");
                     return res.end('error on save into db');
                 }

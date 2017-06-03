@@ -18,6 +18,9 @@ var Journal = new Schema({
     isFolder: Boolean,
     isHome: Boolean,
     journalType: Number,
-    isReadonly: Boolean
+    isReadonly: Boolean,
+    uid: String,//android uid
+    sn: String,//serial num
+    note: String//other info
 });
 mongoose.model("Journal", Journal);
