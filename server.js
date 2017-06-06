@@ -8,7 +8,7 @@ var mongoose = require("mongoose");
 var conf = require("./conf");
 var cors = require("cors");
 var chalk = require('chalk');
-var sitePreload = require('../lib/site-preload');
+var sitePreload = require('./lib/site-preload.js');
 
 var app = express();
 
@@ -56,6 +56,7 @@ var db = mongoose.connection;
 db.on('error', console.error);
 db.once('open', function() {
     console.log(chalk.green("database is opened"));
+    sitePreload.check(app);
 });
 
 mongoose.connect(conf.settings.database_url);
@@ -68,8 +69,6 @@ require("./models/User");
 //app.get('*', function (req, res, next) {
 //    return next();
 //});
-
-sitePreload.check(app);
 
 require("./routes/auth")(app);
 require("./routes/index")(app);

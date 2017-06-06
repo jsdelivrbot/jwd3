@@ -1,38 +1,43 @@
 function() {
-    //return db.getCollection('journals').find({journalType: obj.journalType});
     var queue = [];
-        
-    var roots = db.journals
-        .aggregate([
-             {$match:  { "parent": null,
-                         "isFolder": true }}, 
-             {$lookup: { from: "users",
-                         localField: "user",
-                         foreignField: "_id",
-                         as: "user" }},
-             {$project: { "user":  {"_id": 0, "email": 1} }}
+    //--
+    var searchDoc = function(query){
+        return db.journals
+                 .aggregate([
+                    {$match: query},
+                    {$lookup: { from: "users",
+                                localField: "user",
+                                foreignField: "_id",
+                                as: "user" }},
+                    {$project: { "_id": 1, "name": 1, "fileName": 1, 
+                                 "originalFileName": 1, "parent": 1, "createDate": 1,
+                                 "isFolder": 1, "journalType": 1, "isReadonly": 1,
+                                 "user.email": 1 }}
         ]);
-           
-    /*var getRecursive = function (obj) {
-        var children = getChildren(obj);
-        for (var x = 0; x < children.length; x++) {
-            queue.push(children[x]);
-            getRecursive(children[x]._id);
-        }
+    };
+    //--
+    var getRecursive = function (id) {        
+        var children = getChildren(id);
+        
+        children.forEach(function(child){
+            queue.push(child);
+            getRecursive(child._id);
+        });
     };
     
-    var getChildren = function (obj) {
-        return db.getCollection('journal').find({
-            'parent': obj._id,
-            'journalType': obj.journalType
-        });        
+    //--
+    var getChildren = function (id) {
+        return searchDoc({'parent': id});
     };
     
-    //---------------------------------
-    roots.forEach(function(item){
-        queue.push(item);
+    //----------------MAIN----------------
+    var roots = searchDoc({"parent": null,
+                           "isFolder": true});
+                           
+    roots.forEach(function(rootItem){
+        queue.push(rootItem);
+        getRecursive(rootItem._id);
     });
         
-    return queue;*/
-    return roots;
+    return queue;
 }
