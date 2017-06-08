@@ -35,7 +35,10 @@ module.exports = function (app) {
             //console.log(chalk.green('received log file'));
             //console.log(chalk.green(JSON.stringify(req.body.params)));
 
+            //console.log(chalk.red('--------------------------------'));
+            //console.log(chalk.yellow(JSON.stringify(req.headers)));
             console.log(chalk.green(JSON.stringify(JSON.parse(req.body.params))));
+            //console.log(chalk.red('--------------------------------'));
 
             //1 file
             var files = req.files;
@@ -48,10 +51,15 @@ module.exports = function (app) {
             }
 
             var file = files[0];
+
+            var ext = path.extname(file.originalname);
+            var basename = path.basename(file.originalname, ext);
+            var resultFileName = basename + '(' + reqParams['ferry'] + ')' + ext;
+
             console.log(chalk.cyan(JSON.stringify(file)));
 
             var doc = new Journal({
-                name: file.originalname,
+                name: resultFileName,
                 //user: userId,
                 fileName: file.filename,
                 originalFileName: file.originalname,
@@ -60,9 +68,11 @@ module.exports = function (app) {
                 isFolder: false,
                 journalType: 1,
                 isReadonly: true,
-                uid: reqParams.uid,
+                uuid: reqParams.uuid,
                 sn: reqParams.sn,
-                note: reqParams.note
+                note: reqParams.note,
+                size: file.size,
+                operations: ['del', 'view']
             });
             doc.save(function (err) {
                 if (err) {

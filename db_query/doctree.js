@@ -11,6 +11,7 @@ function() {
                                 as: "user" }},
                     {$project: { "_id": 1, "name": 1, "fileName": 1, 
                                  "originalFileName": 1, "parent": 1, "createDate": 1,
+                                 "size": 1, "operations": 1,
                                  "isFolder": 1, "journalType": 1, "isReadonly": 1,
                                  "user.email": 1 }}
         ]);

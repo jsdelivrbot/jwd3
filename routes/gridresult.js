@@ -65,6 +65,11 @@ module.exports = function (app) {
                     return;
                 }
 
+                /*if(!('view' in data.operation)) {
+                    res.render("errors/404");
+                    return;
+                }*/
+
                 res.render("doc", {
                     docName: docName
                 });
@@ -112,7 +117,8 @@ module.exports = function (app) {
                     createDate: new Date(),
                     isFolder: false,
                     journalType: 0,
-                    isReadonly: false
+                    isReadonly: false,
+                    operation: ['edit', 'del', 'view']
                 });
                 doc.save(function (err) {
                     if (err) {
@@ -178,9 +184,9 @@ module.exports = function (app) {
                 return res.send({ success: false, message: "Произошла ошибка. Файл не найден" });
             }
 
-            if (('isReadonly' in data) && data['isReadonly']) {
-                return res.send({ message: "Нельзя удалить", success: false });
-            }
+            //if (('isReadonly' in data) && data['isReadonly']) {
+            //    return res.send({ message: "Нельзя удалить", success: false });
+            //}
 
             data.remove(function (err, data) {
                 var fileName = req.body.fileName;
@@ -214,7 +220,8 @@ module.exports = function (app) {
             parent: req.body.parent_id,
             createDate: new Date(),
             isFolder: true,
-            isReadonly: false
+            isReadonly: false,
+            operations: ['add', 'edit', 'del', 'view']
         });
         doc.save(function (err) {
             if (err) {
@@ -236,7 +243,7 @@ module.exports = function (app) {
                     return res.send({ message: "Произошла ошибка. Файл не найден" });
                 }
 
-                if (('isReadonly' in data) && data['isReadonly']) {
+                if (('isReadonly' in data) && data['isReadonly']) {//operation
                     return res.send({ message: "Нельзя редактировать" });
                 }
 

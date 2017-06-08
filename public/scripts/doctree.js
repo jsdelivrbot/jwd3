@@ -30,10 +30,12 @@ $(document).ready(function () {
         var tableText = '<table id="docTree">';
         tableText += '<thead><tr>';
         tableText += '<th>Имя</th>';
+        tableText += '<th>Размер(MB)</th>';
         tableText += '<th>Ссылка</th>';
         tableText += '<th>Дата загрузки</th>';
         tableText += '<th>Добавил</th>';
         tableText += '<th>Дом. страница</th>';
+        tableText += '<th>operation</th>';
         tableText += '</tr></thead>';
 
         var bodytext = '<tbody>';
@@ -42,8 +44,6 @@ $(document).ready(function () {
 
         for (var x = 0; x < doc.length; x++) {
             currentDoc = doc[x];
-            //console.info(currentDoc);
-
 
             bodytext += '<tr data-tt-id="' + currentDoc._id +
                 '" data-tt-parent-id="' + currentDoc.parent +
@@ -54,22 +54,37 @@ $(document).ready(function () {
                 '" data-isreadonly="' + currentDoc.isReadonly +
                 '">';
 
+            //filename
             tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
-
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
+            //size
+            //console.info('size=', currentDoc.size);
+            tmp = (currentDoc.fileName === undefined) ? "" : (parseInt(currentDoc.size) / 1024 / 1024).toFixed(1); //MB
+            bodytext += '<td>' + tmp + '</td>';
+
+            //href
             tmp = (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : ' href="' + currentDoc.fileName + '"'; //filename
             tmp += '>';
             tmp += (currentDoc.fileName === undefined || currentDoc.journalType === 1) ? "" : currentDoc.fileName;
             bodytext += '<td><a style="color: #b03b0f"' + tmp + '</a></td>'; //href
 
-            tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate)); //create_date
+            //create date
+            tmp = (currentDoc.createDate === undefined) ? "" : convertDate(new Date(currentDoc.createDate));
             bodytext += '<td><p>' + tmp + '</p></td>';
 
+            //email
             tmp = (currentDoc.user === undefined || currentDoc.user === null || currentDoc.user.length === 0) ? "" : currentDoc.user[0]['email'];
             bodytext += '<td><p class="text-danger">' + tmp + '</p></td>';
 
+            //is home
             bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
+
+            //operation
+            tmp = (currentDoc.operations === undefined) ? "" : currentDoc.operations;
+            bodytext += '<td><p>' + tmp + '</p></td>';
+
+            //end tr
             bodytext += '</tr>'
         }
         bodytext += '</tbody></table>';
@@ -296,10 +311,10 @@ $(document).ready(function () {
         var fileName = $tr.attr('data-filename');
         var isReadonly = $tr.attr('data-isreadonly');
 
-        if (isReadonly === 'true') {
-            swal('Нельзя удалить');
-            return;
-        }
+        //if (isReadonly === 'true') {
+        //    swal('Нельзя удалить');
+        //    return;
+        //}
 
 
         var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
