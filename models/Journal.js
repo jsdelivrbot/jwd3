@@ -18,7 +18,6 @@ var Journal = new Schema({
     isFolder: Boolean,
     isHome: Boolean,
     journalType: Number,
-    isReadonly: Boolean,
     operations: Array,//['add', 'edit', 'del', 'view']
     uuid: String,//android uuid
     sn: String,//serial num

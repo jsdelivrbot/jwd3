@@ -58,17 +58,19 @@ module.exports = function (app) {
     app.get(/doc-\d+$/, jwtauth.authenticate, function (req, res) {
         var docName = req.originalUrl.substring(1, req.originalUrl.length);
 
-        Journal.find({ fileName: docName }, 'fileName')
+        Journal.findOne({ fileName: docName })
             .exec(function (err, data) {
-                if (data.length === 0) {
-                    res.render("errors/404");
-                    return;
+                if (err) {
+                    return res.render("errors/500");
                 }
 
-                /*if(!('view' in data.operation)) {
-                    res.render("errors/404");
-                    return;
-                }*/
+                if (!data) {
+                    return res.render("errors/404");
+                }
+
+                if (data.operations.indexOf('view') === -1) {
+                    return res.render("errors/403");
+                }
 
                 res.render("doc", {
                     docName: docName
@@ -76,36 +78,21 @@ module.exports = function (app) {
             });
     });
 
-    //get doc name
-    app.post("/api/doc_name", jwtauth.authenticate, function (req, res) {
-        var decoded = req.decoded;
-        var userId = decoded.userId;
-
-        Journal.find({}, 'fileName')
-            .exec(function (err, data) {
-                res.send({
-                    doc: data
-                });
-            });
-    });
-
     app.post('/api/protected/journal/upload', function (req, res, next) {
-        //console.log(chalk.red(JSON.stringify(req.headers)));
         upload.single('doc')(req, res, function (err) {
             if (err) {
-                res.setHeader("Content-type", "text/html");
-                return res.end(err.message);
+                return res.send({ success: false, message: "Ошибка при загрузке. \n" + err.message });
             }
 
             var oper = req.headers.oper;
             var fileName = req.headers.filename;
             var id = req.body.parentId;
-
             var file = req.file;
             var token = req.cookies.token;
             var decoded = jwtauth.decode(token);
             var userId = decoded.userId;
 
+            //TODO operations
             if (oper === "add") {
                 //save into db
                 var doc = new Journal({
@@ -117,43 +104,36 @@ module.exports = function (app) {
                     createDate: new Date(),
                     isFolder: false,
                     journalType: 0,
-                    isReadonly: false,
-                    operation: ['edit', 'del', 'view']
+                    size: file.size,
+                    operations: ['edit', 'del', 'view']
                 });
                 doc.save(function (err) {
                     if (err) {
-                        res.setHeader("Content-type", "text/html");
-                        return res.end("Ошибка при сохранении в бд");
+                        return res.send({ success: false, message: "Ошибка при сохранении в бд" });
                     }
 
-                    res.setHeader("Content-type", "text/html");
-                    return res.end("Документ добавлен");
+                    return res.send({ success: true, message: "Документ добавлен" });
                 });
             };
 
-            //console.info('old=', fileName, ', new=', req.file.filename);
             if (oper == "edit") {
                 var newfile = './public/uploads/' + req.file.filename;
                 var oldfile = './public/uploads/' + fileName;
 
                 fs.unlink(oldfile, function (err) {
                     if (err) {
-                        res.setHeader("Content-type", "text/html");
-                        return res.end("Произошла ошибка при удалении");
+                        return res.send({ success: false, message: "Произошла ошибка при удалении" });
                     }
 
                     fs.rename(newfile, oldfile, function (err) {
                         if (err) {
-                            console.info('err, ', err);
-                            res.setHeader("Content-type", "text/html");
-                            return res.end("Произошла ошибка при переименовании");
+                            return res.send({ success: false, message: "Произошла ошибка при переименовании" });
                         }
 
                         //save to db
                         Journal.findOne({ _id: id }, function (err, doc) {
                             if (err) {
-                                res.setHeader("Content-type", "text/html");
-                                return res.end("Произошла ошибка при поиске в бд");
+                                return res.send({ success: false, message: "Произошла ошибка при поиске в бд" });
                             }
 
                             doc['name'] = file.originalname;
@@ -163,12 +143,10 @@ module.exports = function (app) {
 
                             doc.save(function (err) {
                                 if (err) {
-                                    res.setHeader("Content-type", "text/html");
-                                    return res.end("Произошла ошибка при сохранении в бд");
+                                    return res.send({ success: false, message: "Произошла ошибка при сохранении в бд" });
                                 }
 
-                                res.setHeader("Content-type", "text/html");
-                                return res.end("Документ обновлен");
+                                return res.send({ success: true, message: "Документ обновлен" });
                             });
                         });
                     });
@@ -180,25 +158,33 @@ module.exports = function (app) {
     //del doc
     app.post('/api/protected/journal/del', jwtauth.authenticate, function (req, res) {
         Journal.findOne({ _id: req.body.id }, function (err, data) {
-            if (err || data.length === 0) {
+            var isFolder = data.isFolder;
+
+            if (err || !data || (data.length === 0)) {
                 return res.send({ success: false, message: "Произошла ошибка. Файл не найден" });
             }
 
-            //if (('isReadonly' in data) && data['isReadonly']) {
-            //    return res.send({ message: "Нельзя удалить", success: false });
-            //}
+            if (data.operations.indexOf('del') === -1) {
+                return res.send({ success: false, message: "Нельзя удалить" });
+            }
 
             data.remove(function (err, data) {
                 var fileName = req.body.fileName;
+                console.info('isFolder', isFolder);
+
+                if (isFolder) {
+                    return res.send({ success: true, message: "Файл удален" });
+                }
+
                 fs.exists('./public/uploads/' + fileName, function (exists) {
                     if (exists) {
                         fs.unlink('./public/uploads/' + fileName, function (err) {
                             if (err) {
-                                return res.send({ message: "Ошибка при удалении", success: false });
+                                return res.send({ success: false, message: "Ошибка при удалении" });
                             }
 
                             console.log(chalk.red('file deleted'));
-                            return res.send({ message: "Файл удален", success: true });
+                            return res.send({ success: true, message: "Файл удален" });
                         });
                     } else {
                         console.log('file not exists');
@@ -213,22 +199,33 @@ module.exports = function (app) {
     app.post('/api/protected/journal/add_folder', jwtauth.authenticate, function (req, res) {
         var decoded = req.decoded;
         var userId = decoded.userId;
+        var parent_id = req.body.parent_id;
 
-        var doc = new Journal({
-            name: req.body.name,
-            user: userId,
-            parent: req.body.parent_id,
-            createDate: new Date(),
-            isFolder: true,
-            isReadonly: false,
-            operations: ['add', 'edit', 'del', 'view']
-        });
-        doc.save(function (err) {
+        //folder id
+        Journal.findOne({ _id: parent_id }, function (err, data) {
             if (err) {
-                res.send({ message: "Ошибка при добавлении папки" });
+                return res.send({ success: false, message: "Ошибка. Папка не найдена" });
             }
 
-            res.send({ message: "Папка добавлена" });
+            if (!data || (data.operations.indexOf('add') === -1)) {
+                return res.send({ success: false, message: "Нельзя добавить в эту папку" });
+            }
+
+            var doc = new Journal({
+                name: req.body.name,
+                user: userId,
+                parent: req.body.parent_id, //folder id
+                createDate: new Date(),
+                isFolder: true,
+                operations: ['add', 'edit', 'del', 'view']
+            });
+            doc.save(function (err) {
+                if (err) {
+                    res.send({ success: false, message: "Ошибка при добавлении папки" });
+                }
+
+                res.send({ success: true, message: "Папка добавлена" });
+            });
         });
     });
 
@@ -240,19 +237,19 @@ module.exports = function (app) {
         Journal.findOne({ _id: req.body.id })
             .exec(function (err, data) {
                 if (err || data.length === 0) {
-                    return res.send({ message: "Произошла ошибка. Файл не найден" });
+                    return res.send({ success: false, message: "Произошла ошибка. Файл не найден" });
                 }
 
-                if (('isReadonly' in data) && data['isReadonly']) {//operation
-                    return res.send({ message: "Нельзя редактировать" });
+                if (data.operations.indexOf('edit') === -1) {
+                    return res.send({ success: false, message: "Нельзя редактировать" });
                 }
 
                 data.name = req.body.name;
                 data.save(function (err) {
                     if (err) {
-                        return res.send({ message: "Произошла ошибка" });
+                        return res.send({ success: false, message: "Произошла ошибка" });
                     }
-                    return res.send({ message: "Папка изменена" });
+                    return res.send({ success: true, message: "Папка изменена" });
                 });
             });
     });

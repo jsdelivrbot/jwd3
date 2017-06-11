@@ -1,3 +1,8 @@
-p 404 Not found
-br
-p Страница не найдена
+extends ../layout
+
+block content
+    h1 404 - Not found
+    br
+    p Страница не найдена
+
+    input(id="csrftoken", type="hidden", value="#{csrftoken}")

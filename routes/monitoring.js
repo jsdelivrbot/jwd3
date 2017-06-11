@@ -67,7 +67,7 @@ module.exports = function (app) {
                 createDate: new Date(),
                 isFolder: false,
                 journalType: 1,
-                isReadonly: true,
+                //isReadonly: true,
                 uuid: reqParams.uuid,
                 sn: reqParams.sn,
                 note: reqParams.note,

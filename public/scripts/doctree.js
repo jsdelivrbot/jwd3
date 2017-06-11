@@ -35,7 +35,7 @@ $(document).ready(function () {
         tableText += '<th>Дата загрузки</th>';
         tableText += '<th>Добавил</th>';
         tableText += '<th>Дом. страница</th>';
-        tableText += '<th>operation</th>';
+        tableText += '<th>operations</th>';
         tableText += '</tr></thead>';
 
         var bodytext = '<tbody>';
@@ -51,7 +51,7 @@ $(document).ready(function () {
                 '" data-isfolder="' + currentDoc.isFolder +
                 '" data-filename="' + currentDoc.fileName +
                 '" data-journaltype="' + currentDoc.journalType +
-                '" data-isreadonly="' + currentDoc.isReadonly +
+                '" data-operations="' + currentDoc.operations +
                 '">';
 
             //filename
@@ -130,16 +130,17 @@ $(document).ready(function () {
         var $tr = $('#docTree tr.selected');
 
         if ($tr.length == 0) {
-            swal("Выберите ветку, куда добавлять файл");
             console.info('not selected');
+            swal("Выберите ветку, куда добавлять файл");
             return;
         }
 
         var id = $tr.attr('data-tt-id');
         var isFolder = $tr.attr('data-isfolder');
-        var isReadonly = $tr.attr('data-isreadonly');
+        var operations = $tr.attr('data-operations');
+        var opers = operations.split(',');
 
-        if (isReadonly === "true") {
+        if (opers.indexOf('add') === -1) {
             swal('Нельзя добавить');
             return;
         }
@@ -160,9 +161,10 @@ $(document).ready(function () {
         //TODO recursive del?
         var $tr = $('#docTree tr.selected');
         var isFolder = $tr.attr('data-isfolder');
-        var isReadonly = $tr.attr('data-isreadonly');
+        var operations = $tr.attr('data-operations');
+        var opers = operations.split(',');
 
-        if (isReadonly === "true") {
+        if (opers.indexOf('add') === -1) {
             swal('Нельзя добавить');
             return;
         }
@@ -182,8 +184,11 @@ $(document).ready(function () {
                 },
                 url: "/api/protected/journal/add_folder",
                 success: function (data, textStatus, jqXHR) {
-                    //$("#status").empty().text(data.message);
                     $("#message").html(data.message);
+
+                    if (!data.success) {
+                        return;
+                    }
 
                     $('#docTree').remove();
                     loadDocData();
@@ -202,7 +207,7 @@ $(document).ready(function () {
 
         swal({
             title: "Название папки",
-            //text: "Write something interesting:",
+            //text: "",
             type: "input",
             showCancelButton: true,
             closeOnConfirm: true,
@@ -237,8 +242,10 @@ $(document).ready(function () {
 
         var id = $tr.attr('data-tt-id');
         var isFolder = $tr.attr('data-isfolder');
-        var isReadonly = $tr.attr('data-isreadonly');
         var fileName = $tr.attr('data-filename');
+        var operations = $tr.attr('data-operations');
+        var opers = operations.split(',');
+
 
         //folder
         var editFolder = function (id, newName) {
@@ -251,9 +258,13 @@ $(document).ready(function () {
                 },
                 url: "/api/protected/journal/edit_folder",
                 success: function (data, textStatus, jqXHR) {
-                    //$("#status").empty().text(data.message);
                     $("#message").html(data.message);
 
+                    if (!data.success) {
+                        return;
+                    }
+
+                    //reload tree
                     $('#docTree').remove();
                     loadDocData();
                 },
@@ -263,7 +274,7 @@ $(document).ready(function () {
             });
         };
 
-        if (isReadonly === "true") {
+        if (opers.indexOf('edit') === -1) {
             swal('Нельзя редактировать');
             return;
         }
@@ -309,12 +320,13 @@ $(document).ready(function () {
 
         var id = $tr.attr('data-tt-id');
         var fileName = $tr.attr('data-filename');
-        var isReadonly = $tr.attr('data-isreadonly');
+        var operations = $tr.attr('data-operations');
+        var opers = operations.split(',');
 
-        //if (isReadonly === 'true') {
-        //    swal('Нельзя удалить');
-        //    return;
-        //}
+        if (opers.indexOf('del') === -1) {
+            swal('Нельзя удалить');
+            return;
+        }
 
 
         var children = $('#docTree').find('tr[data-tt-parent-id="' + id + '"]');
@@ -334,16 +346,20 @@ $(document).ready(function () {
                 url: "/api/protected/journal/del",
                 success: function (data, textStatus, jqXHR) {
                     $("#message").html(data.message);
+                    if (!data.success) {
+                        return;
+                    }
+
                     $('#docTree').remove();
                     loadDocData();
-                },
-                error: function (jqXHR, textStatus, error) {
-                    console.info("err", error);
-                },
-                complete: function () {
+
                     if (cb) {
                         cb();
                     }
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.info("err", error);
+                    swal("Произошла ошибка при удалении");
                 }
             });
         };
@@ -361,12 +377,8 @@ $(document).ready(function () {
                 ajaxDel(function () {
                     swal("Файл удален");
                 });
-            }, 500);
+            }, 200);
         });
-
-        return;
-
-
     });
 
     //download
