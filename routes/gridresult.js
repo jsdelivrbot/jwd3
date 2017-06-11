@@ -170,7 +170,6 @@ module.exports = function (app) {
 
             data.remove(function (err, data) {
                 var fileName = req.body.fileName;
-                console.info('isFolder', isFolder);
 
                 if (isFolder) {
                     return res.send({ success: true, message: "Файл удален" });
