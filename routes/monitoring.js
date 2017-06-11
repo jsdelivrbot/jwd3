@@ -25,38 +25,37 @@ module.exports = function (app) {
 
     app.post("/upload_log", function (req, res) {
         upload.any()(req, res, function (err) {
+            var curDate = new Date().toISOString()
+                                    .replace(/T/, ' ')
+                                    .replace(/\..+/, '');
+            res.setHeader("Content-type", "text/html");
+
             if (err) {
-                console.log(chalk.red('error upload. ', err.message));
-                res.setHeader("Content-type", "text/html");
-                return res.end(err.message);
+                console.log(chalk.red(curDate + ' error upload. ', err.message));
+                return res.end(curDate, ' ', err.message);
             }
 
             //console.log(chalk.yelow(JSON.stringify(req.headers)));
             //console.log(chalk.green('received log file'));
             //console.log(chalk.green(JSON.stringify(req.body.params)));
-
-            //console.log(chalk.red('--------------------------------'));
             //console.log(chalk.yellow(JSON.stringify(req.headers)));
-            console.log(chalk.green(JSON.stringify(JSON.parse(req.body.params))));
-            //console.log(chalk.red('--------------------------------'));
+            console.log(chalk.green(curDate, ' upload log ', JSON.stringify(JSON.parse(req.body.params))));
 
             //1 file
             var files = req.files;
             var reqParams = JSON.parse(req.body.params);
 
             if (!files || files.length === 0) {
-                console.log(chalk.red('error get files'));
-                res.setHeader("Content-type", "text/html");
-                return res.end('files is null');
+                console.log(chalk.red(curDate, ' log files is null'));
+                return res.end(curDate, ' log files is null');
             }
 
             var file = files[0];
-
             var ext = path.extname(file.originalname);
             var basename = path.basename(file.originalname, ext);
             var resultFileName = basename + '(' + reqParams['ferry'] + ')' + ext;
 
-            console.log(chalk.cyan(JSON.stringify(file)));
+            console.log(chalk.cyan(curDate, ' log file: ', JSON.stringify(file)));
 
             var doc = new Journal({
                 name: resultFileName,
@@ -67,7 +66,6 @@ module.exports = function (app) {
                 createDate: new Date(),
                 isFolder: false,
                 journalType: 1,
-                //isReadonly: true,
                 uuid: reqParams.uuid,
                 sn: reqParams.sn,
                 note: reqParams.note,
@@ -76,12 +74,12 @@ module.exports = function (app) {
             });
             doc.save(function (err) {
                 if (err) {
-                    res.setHeader("Content-type", "text/html");
-                    return res.end('error on save into db');
+                    return res.end(curDate + ' error on save into db');
+                    //return res.end(' error on save into db');
                 }
 
-                res.setHeader("Content-type", "text/html");
-                return res.end('successfully upload');
+                return res.end(curDate + ' successfully upload');
+                //return res.end(' successfully upload');
             });
         });
     });

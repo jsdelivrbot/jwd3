@@ -55,11 +55,12 @@ $(document).ready(function () {
                 '">';
 
             //filename
-            tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : '<span class="file"></span>';
+            tmp = (currentDoc['isFolder'] === true) ? '<span class="folder"></span>' : 
+                  (currentDoc['journalType'] == 0) ? '<span class="file"></span>' : 
+                  (currentDoc['journalType'] == 1) ? '<span class="archive"></span>' : '';
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
             //size
-            //console.info('size=', currentDoc.size);
             tmp = (currentDoc.fileName === undefined) ? "" : (parseInt(currentDoc.size) / 1024 / 1024).toFixed(1); //MB
             bodytext += '<td>' + tmp + '</td>';
 
@@ -117,11 +118,13 @@ $(document).ready(function () {
         $('#docTree tr').dblclick(function () {
             var name = $(this).attr('data-fileName');
             var isFolder = $(this).attr('data-isfolder');
+            var journalType = $(this).attr('data-journaltype');
 
-            if (isFolder == 'false')
-                docView(name); //utils.js
+            if (isFolder == 'true' || journalType == 1)//journalType(0-doc, 1-log)
+                return;
+
+            docView(name); //utils.js
         });
-
     };
 
     //DOC
@@ -417,9 +420,15 @@ $(document).ready(function () {
             error: function (xhr) {
                 status('Error: ' + xhr.status);
             },
-            success: function (response) {
-                $("#message").empty().text(response.toString());
+            success: function (data) {
+                $("#message").html(data.message);
+                //$("#message").empty().text(response.toString());
 
+
+
+                if (!data.success) {
+                    return;
+                }
 
                 $('#docTree').remove();
                 loadDocData();
