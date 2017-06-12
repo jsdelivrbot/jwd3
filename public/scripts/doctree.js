@@ -410,8 +410,6 @@ $(document).ready(function () {
     });
 
     $('#uploadForm').submit(function () {
-        $("#status").empty().text("File is uploading...");
-
         $(this).ajaxSubmit({
             headers: {
                 oper: $('#fileOper').val(),
@@ -422,9 +420,6 @@ $(document).ready(function () {
             },
             success: function (data) {
                 $("#message").html(data.message);
-                //$("#message").empty().text(response.toString());
-
-
 
                 if (!data.success) {
                     return;

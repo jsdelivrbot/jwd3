@@ -54,8 +54,9 @@ app.disable('x-powered-by');
 //MONGO
 var db = mongoose.connection;
 db.on('error', console.error);
-db.once('open', function() {
-    console.log(chalk.green("database is opened"));
+db.once('open', function () {
+    var curDate = new Date();
+    console.log(chalk.green(curDate + " database is opened"));
     sitePreload.check(app);
 });
 
