@@ -35,6 +35,7 @@ $(document).ready(function () {
         tableText += '<th>Дата загрузки</th>';
         tableText += '<th>Добавил</th>';
         tableText += '<th>Дом. страница</th>';
+        tableText += '<th>Доп.</th>';
         tableText += '<th>operations</th>';
         tableText += '</tr></thead>';
 
@@ -80,6 +81,10 @@ $(document).ready(function () {
 
             //is home
             bodytext += '<td><input type="checkbox" disabled="disabled"' + ((currentDoc.isHome == true) ? ' checked="checked"' : " ") + '/></td>';
+
+            //note
+            tmp = (currentDoc.note === undefined) ? "" : currentDoc.note;
+            bodytext += '<td><p>' + tmp + '</p></td>';
 
             //operation
             tmp = (currentDoc.operations === undefined) ? "" : currentDoc.operations;

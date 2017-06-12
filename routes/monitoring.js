@@ -68,7 +68,7 @@ module.exports = function (app) {
                 journalType: 1,
                 uuid: reqParams.uuid,
                 sn: reqParams.sn,
-                note: reqParams.note,
+                note: 'uuid:' + reqParams['uuid'] + ';sn:' + reqParams['sn'] + ';ferry:' + reqParams['ferry'], //reqParams.note,
                 size: file.size,
                 operations: ['del', 'view']
             });

@@ -46,8 +46,13 @@
         var mmChars = mm.split('');
         var ddChars = dd.split('');
 
+        var hhChars = hh.split('');
+        var miChars = mi.split('');
+        var ssChars = ss.split('');
+
         return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]) +
-          ' ' + hh + ':' + mi + ':' + ss;
+          ' ' + (hhChars[1] ? hh : "0" + hhChars[0]) + ':' + (miChars[1] ? mi : "0" + miChars[0]) + 
+          ':' + (ssChars[1] ? ss : "0" + ssChars[0]);
     }
 
     var docView = function (name) {
