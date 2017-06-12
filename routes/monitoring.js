@@ -75,11 +75,9 @@ module.exports = function (app) {
             doc.save(function (err) {
                 if (err) {
                     return res.end(curDate + ' error on save into db');
-                    //return res.end(' error on save into db');
                 }
 
                 return res.end(curDate + ' successfully upload');
-                //return res.end(' successfully upload');
             });
         });
     });
