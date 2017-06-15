@@ -1,7 +1,19 @@
 extends layout
 
 block content
-    p monitoring #{val1}
+    p monitoring
 
     div(id="content")
+        p(id="message")
+
+    table(id="scanerGrid")
+        div(id="scanerPager")
+
+    link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
+    link(rel="stylesheet", href="/libs/sweetalert/dist/sweetalert.css")
+
     script(src="/scripts/monitoring.js")
+    script(src="/libs/sweetalert/dist/sweetalert.min.js")
+    script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
+    script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
+    script(src="/socket.io/socket.io.js")

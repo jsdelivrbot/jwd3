@@ -1,9 +1,13 @@
+var jwtauth = require("../lib/jwtauth");
+var conf = require("../conf");
 var mongoose = require("mongoose");
 var chalk = require('chalk');
 var path = require('path');
 var multer = require('multer');
+require("../models/Scaner");
+require("../models/OnlineScaner");
 
-module.exports = function (app) {
+module.exports = function (app, io) {
     //upload
     var storage = multer.diskStorage({
         destination: function (req, file, callback) {
@@ -20,8 +24,87 @@ module.exports = function (app) {
         }
     });
 
-    //var Test = mongoose.model("Test");
-    var Journal = mongoose.model("Journal");
+    var Scaner = mongoose.model("Scaner");
+    var OnlineScaner = mongoose.model("OnlineScaner");
+    var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
+
+    //page
+    app.get("/monitoring", jwtauth.authenticate, function (req, res) {
+        return res.render('monitoring');
+    });
+    //monitoring scaner data
+    app.post("/api/scaner_data", jwtauth.authenticate, function (req, res) {
+        var decoded = req.decoded;
+        var userId = decoded.userId;
+
+        //find into db
+        OnlineScaner.aggregate([
+            { $match: {} },
+            { $lookup: { from: "scaners",
+                localField: "scaner",
+                foreignField: "_id",
+                as: "sc"
+            }
+            },
+            { $unwind: '$sc' },
+            { $project: { _id: 1,
+                timeDiff: {$multiply: [{ $subtract: [ new Date(), '$registerDate']}, (1/1000/60)]},//minutes
+                timeDiffIsWarning: {$subtract: [timeWarningDiff, {$multiply: [{ $subtract: [ new Date(), '$registerDate']}, (1/1000/60)]}]},
+                registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry"
+            }
+            }
+        ], function (err, data) {
+            if (err) {
+                return res.render("errors/500");
+            }
+
+            console.info(data);
+            return res.send(data);
+        });
+    });
+
+    //scaner kuku. Scaner register here
+    app.post("/send_scaner_info", function (req, res) {
+        var params = req.body;
+
+        //***scaner upsert***
+        var query = { uuid: params['uuid'] };
+        var data = {
+            ferry: params['ferry'],
+            sn: params['sn'],
+            uuid: params['uuid'],
+            isused: true
+        };
+        var options = { upsert: true };
+
+        Scaner.findOneAndUpdate(query, data, options, function (err, scaner) {
+            if (err) {
+                console.log(chalk.red('scaner upsert error! ' + err.message));
+                return res.end('scaner upsert error');
+            }
+
+            //***online scaner upsert***
+            query = { scaner: scaner['_id'] };
+            data = {
+                scaner: scaner['_id'],
+                registerDate: new Date()
+            };
+            options = { upsert: true };
+
+            OnlineScaner.findOneAndUpdate(query, data, options, function (err, onlinescaner) {
+                if (err) {
+                    console.log(chalk.red('onlinescaner upsert error! ' + err.message));
+                    return res.end('onlinescaner upsert error');
+                }
+
+                io.sockets.emit('updatescanerinfo', req.body);
+            });
+        });
+
+        return res.end('POST send_scaner_info');
+    });
+
+
 
     app.post("/upload_log", function (req, res) {
         upload.any()(req, res, function (err) {
