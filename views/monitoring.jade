@@ -9,6 +9,12 @@ block content
     table(id="scanerGrid")
         div(id="scanerPager")
 
+    div
+        -if ( roles && roles.indexOf("admin") !== -1 ) {
+            input(id="getScanerFile", type="button", class="btn btn-success has-margin", value="getScanerFile")
+        - }
+        
+
     link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
     link(rel="stylesheet", href="/libs/sweetalert/dist/sweetalert.css")
 

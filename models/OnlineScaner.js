@@ -7,6 +7,9 @@ var OnlineScaner = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scaner'
     },
-    registerDate: Date
+    registerDate: Date,
+    ip4: String,
+    mac: String,
+    wifiname: String
 });
 mongoose.model("OnlineScaner", OnlineScaner);

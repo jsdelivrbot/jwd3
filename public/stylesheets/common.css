@@ -80,3 +80,11 @@ div[readonly] {
 #pdfPage {
     margin: 5px;
 }
+
+.monitoring-warning {
+    background-color: #f76a6a;
+}
+
+.monitoring-ok {
+    background-color: #8fff7e;
+}

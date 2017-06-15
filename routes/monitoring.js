@@ -30,7 +30,12 @@ module.exports = function (app, io) {
 
     //page
     app.get("/monitoring", jwtauth.authenticate, function (req, res) {
-        return res.render('monitoring');
+        var decoded = req.decoded;
+        var roles = decoded.roles;
+
+        return res.render('monitoring', {
+            roles: roles
+        });
     });
     //monitoring scaner data
     app.post("/api/scaner_data", jwtauth.authenticate, function (req, res) {
@@ -47,18 +52,19 @@ module.exports = function (app, io) {
             }
             },
             { $unwind: '$sc' },
-            { $project: { _id: 1,
-                timeDiff: {$multiply: [{ $subtract: [ new Date(), '$registerDate']}, (1/1000/60)]},//minutes
-                timeDiffIsWarning: {$subtract: [timeWarningDiff, {$multiply: [{ $subtract: [ new Date(), '$registerDate']}, (1/1000/60)]}]},
-                registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry"
-            }
+            { $project: { 
+                timeDiff: { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)] }, //minutes
+                status: { $subtract: [timeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)]}] },
+
+                _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
+                ip4: 1, mac: 1, wifiname: 1}
             }
         ], function (err, data) {
             if (err) {
                 return res.render("errors/500");
             }
 
-            console.info(data);
+            //console.log(chalk.green(JSON.stringify(data)) + '\n');
             return res.send(data);
         });
     });
@@ -66,6 +72,7 @@ module.exports = function (app, io) {
     //scaner kuku. Scaner register here
     app.post("/send_scaner_info", function (req, res) {
         var params = req.body;
+        //console.info('send_scaner_info body=', params);
 
         //***scaner upsert***
         var query = { uuid: params['uuid'] };
@@ -87,7 +94,10 @@ module.exports = function (app, io) {
             query = { scaner: scaner['_id'] };
             data = {
                 scaner: scaner['_id'],
-                registerDate: new Date()
+                registerDate: new Date(),
+                ip4: params['ip4'],
+                mac: params['mac'],
+                wifiname: params['wifiname']
             };
             options = { upsert: true };
 
