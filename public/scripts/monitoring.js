@@ -44,9 +44,9 @@ $(document).ready(function () {
                    { name: 'status', width: 70, editable: false, align: 'right', formatter: timeWarningFormatter },
                    { name: 'uuid', width: 200, editable: false, align: 'right' },
                    { name: 'ferry', width: 100, editable: false, align: 'right' },
-                   { name: 'sn', width: 200, editable: false, align: 'right'},
-                   { name: 'ip4', width: 150, editable: false, align: 'right'},
-                   { name: 'mac', width: 150, editable: false, align: 'right'},
+                   { name: 'sn', width: 200, editable: false, align: 'right' },
+                   { name: 'ip4', width: 150, editable: false, align: 'right' },
+                   { name: 'mac', width: 150, editable: false, align: 'right' },
                    { name: 'wifiname', width: 150, editable: false, align: 'right'}],
         rowNum: 20,
         rowList: [10, 20, 30],
@@ -54,19 +54,23 @@ $(document).ready(function () {
         pager: '#' + noteGridPager
     });
 
-    function reloadGrid() {
+    var reloadGrid = function () {
+        //console.info(new Date());
         var grid = $('#' + noteGridName);
         grid.trigger("reloadGrid", [{ current: true}]);
     }
 
     $('#' + noteGridName).jqGrid('navGrid', '#' + noteGridPager, { edit: false, add: false, del: false, search: false });
 
-    socket.on('updatescanerinfo', function (msg) {
-        //$('#message').html(convertDate(new Date()));
-        //console.info('>>>', msg);
+    /*socket.on('updatescanerinfo', function (msg) {
+    //$('#message').html(convertDate(new Date()));
+    //console.info('>>>', msg);
 
-        reloadGrid();
-    });
+    reloadGrid();
+    });*/
+
+    //var relGrid
+    setInterval(reloadGrid, 4000);
 
 
     //download
@@ -80,8 +84,27 @@ $(document).ready(function () {
         }
 
         var rowData = grid.getRowData(selRowId);
+        var data = {
+            uuid: rowData.uuid,
+            sn: rowData.sn,
+            ferry: rowData.ferry,
+            ip4: rowData.ip4,
+            mac: rowData.mac
+        };
 
-        //$.fileDownload('/uploads/' + fileName);
+        $.ajax({
+            type: "POST",
+            //dataType: "JSON",
+            data: data,
+            url: "/api/dl",
+            success: function (data, textStatus, jqXHR) {
+                swal('logs downloaded.', data);
+            },
+            error: function (jqXHR, textStatus, error) {
+                console.info("err", error);
+            }
+        });
+
         return false;
     });
 

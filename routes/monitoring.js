@@ -4,6 +4,8 @@ var mongoose = require("mongoose");
 var chalk = require('chalk');
 var path = require('path');
 var multer = require('multer');
+var ioRouter = require('socket.io-events')();
+require("../models/Journal");
 require("../models/Scaner");
 require("../models/OnlineScaner");
 
@@ -24,55 +26,26 @@ module.exports = function (app, io) {
         }
     });
 
+    var Journal = mongoose.model("Journal");
     var Scaner = mongoose.model("Scaner");
     var OnlineScaner = mongoose.model("OnlineScaner");
     var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
 
-    //page
-    app.get("/monitoring", jwtauth.authenticate, function (req, res) {
-        var decoded = req.decoded;
-        var roles = decoded.roles;
+    setInterval(function () {
+        io.sockets.emit('kuku');
+    }, 3000);
 
-        return res.render('monitoring', {
-            roles: roles
-        });
-    });
-    //monitoring scaner data
-    app.post("/api/scaner_data", jwtauth.authenticate, function (req, res) {
-        var decoded = req.decoded;
-        var userId = decoded.userId;
+    //setInterval(function () {
+    //    io.sockets.emit('download');
+    //}, 7000);
 
-        //find into db
-        OnlineScaner.aggregate([
-            { $match: {} },
-            { $lookup: { from: "scaners",
-                localField: "scaner",
-                foreignField: "_id",
-                as: "sc"
-            }
-            },
-            { $unwind: '$sc' },
-            { $project: { 
-                timeDiff: { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)] }, //minutes
-                status: { $subtract: [timeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)]}] },
 
-                _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
-                ip4: 1, mac: 1, wifiname: 1}
-            }
-        ], function (err, data) {
-            if (err) {
-                return res.render("errors/500");
-            }
+    //***SOCKET***
+    ioRouter.on('kukuanswer', function (socket, args, next) {
+        var msg = args[1];
+        var params = JSON.parse(msg);
 
-            //console.log(chalk.green(JSON.stringify(data)) + '\n');
-            return res.send(data);
-        });
-    });
-
-    //scaner kuku. Scaner register here
-    app.post("/send_scaner_info", function (req, res) {
-        var params = req.body;
-        //console.info('send_scaner_info body=', params);
+        //console.info(new Date()); //params);
 
         //***scaner upsert***
         var query = { uuid: params['uuid'] };
@@ -87,7 +60,7 @@ module.exports = function (app, io) {
         Scaner.findOneAndUpdate(query, data, options, function (err, scaner) {
             if (err) {
                 console.log(chalk.red('scaner upsert error! ' + err.message));
-                return res.end('scaner upsert error');
+                return;
             }
 
             //***online scaner upsert***
@@ -104,20 +77,70 @@ module.exports = function (app, io) {
             OnlineScaner.findOneAndUpdate(query, data, options, function (err, onlinescaner) {
                 if (err) {
                     console.log(chalk.red('onlinescaner upsert error! ' + err.message));
-                    return res.end('onlinescaner upsert error');
+                    return;
                 }
-
-                io.sockets.emit('updatescanerinfo', req.body);
             });
         });
+    });
+    io.use(ioRouter);
 
-        return res.end('POST send_scaner_info');
+    //download command
+    app.post("/api/dl", jwtauth.authenticate, function (req, res) {
+        var decoded = req.decoded;
+        var roles = decoded.roles;
+
+        //console.info(req.body);
+        io.sockets.emit('download', req.body.uuid);
+        return res.send('OK');
     });
 
+    //***PAGE***
+    app.get("/monitoring", jwtauth.authenticate, function (req, res) {
+        var decoded = req.decoded;
+        var roles = decoded.roles;
 
+        return res.render('monitoring', {
+            roles: roles
+        });
+    });
+
+    //***MONITORING SCANER DATA***
+    app.post("/api/scaner_data", jwtauth.authenticate, function (req, res) {
+        var decoded = req.decoded;
+        var userId = decoded.userId;
+
+        //find into db
+        OnlineScaner.aggregate([
+            { $match: {} },
+            { $lookup: { from: "scaners",
+                localField: "scaner",
+                foreignField: "_id",
+                as: "sc"
+            }
+            },
+            { $unwind: '$sc' },
+            { $project: {
+                timeDiff: { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)] }, //minutes
+                status: { $subtract: [timeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)]}] },
+
+                _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
+                ip4: 1, mac: 1, wifiname: 1
+            }
+            }
+        ], function (err, data) {
+            if (err) {
+                return res.render("errors/500");
+            }
+
+            //console.log(chalk.green(JSON.stringify(data)) + '\n');
+            return res.send(data);
+        });
+    });
 
     app.post("/upload_log", function (req, res) {
         upload.any()(req, res, function (err) {
+            //console.log(chalk.green('upload_log'));
+
             var curDate = new Date().toISOString()
                                     .replace(/T/, ' ')
                                     .replace(/\..+/, '');
@@ -132,7 +155,7 @@ module.exports = function (app, io) {
             //console.log(chalk.green('received log file'));
             //console.log(chalk.green(JSON.stringify(req.body.params)));
             //console.log(chalk.yellow(JSON.stringify(req.headers)));
-            console.log(chalk.green(curDate, ' upload log ', JSON.stringify(JSON.parse(req.body.params))));
+            //console.log(chalk.green(curDate, ' upload log ', JSON.stringify(JSON.parse(req.body.params))));
 
             //1 file
             var files = req.files;
@@ -148,7 +171,7 @@ module.exports = function (app, io) {
             var basename = path.basename(file.originalname, ext);
             var resultFileName = basename + '(' + reqParams['ferry'] + ')' + ext;
 
-            console.log(chalk.cyan(curDate, ' log file: ', JSON.stringify(file)));
+            //console.log(chalk.cyan(curDate, ' log file: ', JSON.stringify(file)));
 
             var doc = new Journal({
                 name: resultFileName,

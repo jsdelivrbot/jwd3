@@ -10,6 +10,10 @@ var cors = require("cors");
 var chalk = require('chalk');
 var sitePreload = require('./lib/site-preload.js');
 
+//for net socket
+var net = require('net');
+//var sockets = [];
+
 var app = express();
 
 
@@ -32,7 +36,7 @@ app.use(express.session({
     cookie: {httpOnly: false}//false - accessible into document.cookie...
 }));
 
-function csrfConf(fn) {
+/*function csrfConf(fn) {
     return function (req, res, next) {
         if (req.path === '/upload_log' && req.method === 'POST') {//this url without csrf...........
             fn(req, res, next);
@@ -41,7 +45,7 @@ function csrfConf(fn) {
         }
     }
 };
-app.use(csrfConf(express.csrf()));
+app.use(csrfConf(express.csrf()));*/
 app.use(function (req, res, next) {
     res.locals.csrftoken = req.session._csrf;
     next();
@@ -74,9 +78,17 @@ require("./models/User");
 var server = http.createServer(app);
 
 var io = require("socket.io").listen(server);
-io.set('log level', 0);
-
+//app.io = io;
 io.on('connection', function (socket) {
+    console.log(chalk.cyan(new Date(), 'socket user connected'));
+    //socket.on('kuku', function (message) {
+    //    console.info('kuku: ', message);
+    //});
+
+    //setInterval(function () {
+    //    io.sockets.emit('download', {'tt': 123});
+    //}, 3000);
+
     io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
     socket.on('disconnect', function () {
         io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
@@ -87,8 +99,6 @@ require("./routes/auth")(app);
 require("./routes/index")(app);
 require("./routes/gridresult")(app);
 require("./routes/monitoring")(app, io);
-
-
 
 server.listen(app.get("port"), function () {
     console.log(chalk.green("listen on port: " + app.get("port")));
