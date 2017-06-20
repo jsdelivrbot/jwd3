@@ -30,22 +30,20 @@ module.exports = function (app, io) {
     var Scaner = mongoose.model("Scaner");
     var OnlineScaner = mongoose.model("OnlineScaner");
     var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
-
-    setInterval(function () {
-        io.sockets.emit('kuku');
-    }, 3000);
-
-    //setInterval(function () {
-    //    io.sockets.emit('download');
-    //}, 7000);
+    var queryIntervalSec = conf.settings.monitoringQueryIntervalSec;
 
 
     //***SOCKET***
+
+    //periodical task
+    setInterval(function () {
+        io.sockets.emit('kuku');
+    }, queryIntervalSec);
+
+    
     ioRouter.on('kukuanswer', function (socket, args, next) {
         var msg = args[1];
         var params = JSON.parse(msg);
-
-        //console.info(new Date()); //params);
 
         //***scaner upsert***
         var query = { uuid: params['uuid'] };
@@ -150,12 +148,6 @@ module.exports = function (app, io) {
                 console.log(chalk.red(curDate + ' error upload. ', err.message));
                 return res.end(curDate, ' ', err.message);
             }
-
-            //console.log(chalk.yelow(JSON.stringify(req.headers)));
-            //console.log(chalk.green('received log file'));
-            //console.log(chalk.green(JSON.stringify(req.body.params)));
-            //console.log(chalk.yellow(JSON.stringify(req.headers)));
-            //console.log(chalk.green(curDate, ' upload log ', JSON.stringify(JSON.parse(req.body.params))));
 
             //1 file
             var files = req.files;

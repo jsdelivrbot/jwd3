@@ -18,8 +18,19 @@ $(document).ready(function () {
     }
 
     var timeDiffFormatter = function (cellvalue, options, rowObject) {
-        var diffInMinutes = Math.ceil(cellvalue);
-        return diffInMinutes;
+        var minutes = parseInt(cellvalue);
+        var mod;
+
+        var dd = Math.floor(minutes / 60 / 24);
+        mod = minutes - (dd * 60 * 24);
+
+        var hh = Math.floor(mod / 60);
+        mod = mod - (hh * 60);
+
+        var mi = mod;
+
+        var txt = dd + "d " + hh + "h " + mi + "m";
+        return txt;
     }
 
     var timeWarningFormatter = function (cellvalue, options, rowObject) {
@@ -37,7 +48,7 @@ $(document).ready(function () {
         mtype: 'POST',
         datatype: 'json',
         ignoreCase: true,
-        colNames: ['_id', 'last register date', 'timeDiff(minutes)', 'status', 'scaner uuid', 'ferry', 'scaner sn', 'ip4', 'mac', 'wifiname'],
+        colNames: ['_id', 'Дата прихода данных', 'Разница во времени', 'Статус', 'uuid', 'Паром', 'Серийный номер', 'ip4', 'mac', 'wifiname'],
         colModel: [{ name: '_id', width: 200, hidden: true, editable: false, key: true },
                    { name: 'registerDate', width: 200, editable: false, align: 'right', formatter: dateFormatter },
                    { name: 'timeDiff', width: 200, editable: false, align: 'right', formatter: timeDiffFormatter },
