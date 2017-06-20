@@ -88,6 +88,7 @@ module.exports = function (app, io) {
         var roles = decoded.roles;
 
         //console.info(req.body);
+
         io.sockets.emit('download', req.body.uuid);
         return res.send('OK');
     });

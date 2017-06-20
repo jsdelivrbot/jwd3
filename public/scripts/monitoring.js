@@ -73,13 +73,6 @@ $(document).ready(function () {
 
     $('#' + noteGridName).jqGrid('navGrid', '#' + noteGridPager, { edit: false, add: false, del: false, search: false });
 
-    /*socket.on('updatescanerinfo', function (msg) {
-    //$('#message').html(convertDate(new Date()));
-    //console.info('>>>', msg);
-
-    reloadGrid();
-    });*/
-
     //var relGrid
     setInterval(reloadGrid, 4000);
 
@@ -109,9 +102,11 @@ $(document).ready(function () {
             data: data,
             url: "/api/dl",
             success: function (data, textStatus, jqXHR) {
-                swal('logs downloaded.', data);
+                $('#message').html(data);
+                //swal('logs downloaded.', data);
             },
             error: function (jqXHR, textStatus, error) {
+                $('#message').html('error!', data);
                 console.info("err", error);
             }
         });
