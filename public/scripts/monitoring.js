@@ -74,7 +74,7 @@ $(document).ready(function () {
     $('#' + noteGridName).jqGrid('navGrid', '#' + noteGridPager, { edit: false, add: false, del: false, search: false });
 
     //var relGrid
-    setInterval(reloadGrid, 4000);
+    setInterval(reloadGrid, 7000);
 
 
     //download
@@ -102,7 +102,7 @@ $(document).ready(function () {
             data: data,
             url: "/api/dl",
             success: function (data, textStatus, jqXHR) {
-                $('#message').html(data);
+                //$('#message').html(data);
                 //swal('logs downloaded.', data);
             },
             error: function (jqXHR, textStatus, error) {

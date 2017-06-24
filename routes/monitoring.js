@@ -30,7 +30,7 @@ module.exports = function (app, io) {
     var Scaner = mongoose.model("Scaner");
     var OnlineScaner = mongoose.model("OnlineScaner");
     var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
-    var queryIntervalSec = conf.settings.monitoringQueryIntervalSec;
+    var queryIntervalSec = conf.settings.monitoringQueryIntervalMSec;
 
 
     //***SOCKET***
@@ -40,8 +40,9 @@ module.exports = function (app, io) {
         io.sockets.emit('kuku');
     }, queryIntervalSec);
 
-    
+
     ioRouter.on('kukuanswer', function (socket, args, next) {
+        //console.info(new Date() + 'kukuanswer');
         var msg = args[1];
         var params = JSON.parse(msg);
 
@@ -80,6 +81,7 @@ module.exports = function (app, io) {
             });
         });
     });
+
     io.use(ioRouter);
 
     //download command
@@ -90,7 +92,7 @@ module.exports = function (app, io) {
         //console.info(req.body);
 
         io.sockets.emit('download', req.body.uuid);
-        return res.send('OK');
+        return res.send('start download');
     });
 
     //***PAGE***
