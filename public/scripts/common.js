@@ -65,7 +65,9 @@ $(document).ready(function () {
                 $message.html(data.message);
 
                 if (data.success === true) {
-                    window.location.href = '/';
+                    var back = getUrlVars()['back'];
+
+                    window.location.href = (back === undefined) ? "/" : back;
                 }
                 //if (supportHtml5Storage && data.token) {
                 //    localStorage.setItem("token", data.token);
