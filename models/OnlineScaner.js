@@ -10,6 +10,7 @@ var OnlineScaner = new Schema({
     registerDate: Date,
     ip4: String,
     mac: String,
-    wifiname: String
+    wifiname: String,
+    deviceTimeStamp: Date
 });
 mongoose.model("OnlineScaner", OnlineScaner);

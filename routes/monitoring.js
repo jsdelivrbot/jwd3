@@ -32,12 +32,18 @@ module.exports = function (app, io) {
     var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
     var queryIntervalSec = conf.settings.monitoringQueryIntervalMSec;
 
+    var deviceTimeWarningDiff = conf.settings.monitoringDeviceDiffWarningSec;
+
 
     //***SOCKET***
 
     //periodical task
     setInterval(function () {
-        io.sockets.emit('kuku');
+        var curDate = new Date().toISOString()
+                                    .replace(/T/, ' ')
+                                    .replace(/\..+/, '');
+
+        io.sockets.emit('kuku', curDate);
     }, queryIntervalSec);
 
 
@@ -69,7 +75,8 @@ module.exports = function (app, io) {
                 registerDate: new Date(),
                 ip4: params['ip4'],
                 mac: params['mac'],
-                wifiname: params['wifiname']
+                wifiname: params['wifiname'],
+                deviceTimeStamp: params['devicetimestamp']
             };
             options = { upsert: true };
 
@@ -122,10 +129,13 @@ module.exports = function (app, io) {
             { $unwind: '$sc' },
             { $project: {
                 timeDiff: { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)] }, //minutes
-                status: { $subtract: [timeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)]}] },
+                status: { $subtract: [timeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$registerDate'] }, (1 / 1000 / 60)]}] }, //cur date and register date
+
+                deviceTimeDiff: { $multiply: [{ $subtract: [new Date(), '$deviceTimeStamp'] }, (1 / 1000)] }, //sec
+                statusDeviceDiff: { $subtract: [deviceTimeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$deviceTimeStamp'] }, (1 / 1000)]}] }, //cur date and device date
 
                 _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
-                ip4: 1, mac: 1, wifiname: 1
+                ip4: 1, mac: 1, wifiname: 1, deviceTimeStamp: 1
             }
             }
         ], function (err, data) {

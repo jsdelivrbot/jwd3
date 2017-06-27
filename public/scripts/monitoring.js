@@ -13,7 +13,7 @@ $(document).ready(function () {
     }
 
     var uuidFormatter = function (cellvalue, options, rowObject) {
-        console.info(cellvalue);
+        //console.info(cellvalue);
         return cellvalue['ferry'];
     }
 
@@ -42,23 +42,39 @@ $(document).ready(function () {
         return warning;
     }
 
+    var deviceTsFormatter = function (cellvalue, options, rowObject) {
+        if (cellvalue === undefined) {
+            return "";
+        }
+
+        var deviceDate = convertDate(new Date(cellvalue));
+        var diff = rowObject['statusDeviceDiff'];
+
+        //console.info(rowObject);
+
+        var txt = (diff > 0) ? "<div class='monitoring-ok'><b>" + deviceDate + "</b></div>" :
+                               "<div class='monitoring-warning'><b>" + deviceDate + "</b></div>";
+        return txt;
+    }
+
     $('#' + noteGridName).jqGrid({
         caption: 'scaner',
         url: '/api/scaner_data',
         mtype: 'POST',
         datatype: 'json',
         ignoreCase: true,
-        colNames: ['_id', 'Дата прихода данных', 'Разница во времени', 'Статус', 'uuid', 'Паром', 'Серийный номер', 'ip4', 'mac', 'wifiname'],
+        colNames: ['_id', 'Дата прихода данных', 'Разница во времени', 'Статус', 'uuid', 'Паром', 'Серийный номер', 'ip4', 'mac', 'wifiname', "Время на устройстве"],
         colModel: [{ name: '_id', width: 200, hidden: true, editable: false, key: true },
-                   { name: 'registerDate', width: 200, editable: false, align: 'right', formatter: dateFormatter },
-                   { name: 'timeDiff', width: 200, editable: false, align: 'right', formatter: timeDiffFormatter },
+                   { name: 'registerDate', width: 150, editable: false, align: 'right', formatter: dateFormatter },
+                   { name: 'timeDiff', width: 150, editable: false, align: 'right', formatter: timeDiffFormatter },
                    { name: 'status', width: 70, editable: false, align: 'right', formatter: timeWarningFormatter },
-                   { name: 'uuid', width: 200, editable: false, align: 'right' },
+                   { name: 'uuid', width: 150, editable: false, align: 'right' },
                    { name: 'ferry', width: 100, editable: false, align: 'right' },
-                   { name: 'sn', width: 200, editable: false, align: 'right' },
-                   { name: 'ip4', width: 150, editable: false, align: 'right' },
-                   { name: 'mac', width: 150, editable: false, align: 'right' },
-                   { name: 'wifiname', width: 150, editable: false, align: 'right'}],
+                   { name: 'sn', width: 150, editable: false, align: 'right' },
+                   { name: 'ip4', width: 120, editable: false, align: 'right' },
+                   { name: 'mac', width: 120, editable: false, align: 'right' },
+                   { name: 'wifiname', width: 150, editable: false, align: 'right' },
+                   { name: 'deviceTimeStamp', width: 200, editable: false, align: 'right', formatter: deviceTsFormatter}],
         rowNum: 20,
         rowList: [10, 20, 30],
         height: 'auto',
