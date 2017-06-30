@@ -46,14 +46,41 @@ module.exports = function (app, io) {
         io.sockets.emit('kuku', curDate);
     }, queryIntervalSec);
 
+    //datetime parse
+    var dateParse = function (str) {
+        var sep = str.split(" ");
+        if (sep.length !== 2) {
+            return null;
+        }
+
+        var dateArr = sep[0].split(".");
+        if (dateArr.length !== 3) {
+            return null;
+        }
+
+        var timeArr = sep[1].split(":");
+        if (timeArr.length !== 3) {
+            return null;
+        }
+
+        //console.log('dateArr=', dateArr, ', timeArr=', timeArr);
+
+        return new Date(parseInt(dateArr[2]), parseInt(dateArr[1] - 1), parseInt(dateArr[0]),
+                        parseInt(timeArr[0]), parseInt(timeArr[1]), parseInt(timeArr[2]));
+    }
 
     ioRouter.on('kukuanswer', function (socket, args, next) {
-        //console.info(new Date() + 'kukuanswer');
         var msg = args[1];
+        //console.log(new Date() + 'kukuanswer. msg=' + msg);
+
         var params = JSON.parse(msg);
 
         //***scaner upsert***
-        var query = { uuid: params['uuid'] };
+        var query = {
+            ferry: params['ferry'],
+            sn: params['sn'],
+            uuid: params['uuid']
+        };
         var data = {
             ferry: params['ferry'],
             sn: params['sn'],
@@ -76,7 +103,7 @@ module.exports = function (app, io) {
                 ip4: params['ip4'],
                 mac: params['mac'],
                 wifiname: params['wifiname'],
-                deviceTimeStamp: params['devicetimestamp']
+                deviceTimeStamp: dateParse(params['devicetimestamp'])
             };
             options = { upsert: true };
 
