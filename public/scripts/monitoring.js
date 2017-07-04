@@ -103,6 +103,8 @@ $(document).ready(function () {
             return false;
         }
 
+        NProgress.inc();
+
         var rowData = grid.getRowData(selRowId);
         var data = {
             uuid: rowData.uuid,
@@ -128,6 +130,21 @@ $(document).ready(function () {
         });
 
         return false;
+    });
+
+    //socket download answer
+    socket.on('dlanswer', function (msg) {
+        NProgress.done();
+
+        var jsonAnswer = JSON.parse(msg[1]);
+        var res = jsonAnswer['success'];
+        var info = jsonAnswer['info'];
+
+        if (res) {
+            swal('successfully transfer', info, 'success');
+        } else {
+            swal('error on transfer', info, 'error');
+        }
     });
 
 });

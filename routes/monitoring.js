@@ -116,6 +116,11 @@ module.exports = function (app, io) {
         });
     });
 
+    ioRouter.on('dlanswer', function (socket, args, next) {
+        console.log('download answer ', args);
+        io.sockets.emit('dlanswer', args);
+    });
+
     io.use(ioRouter);
 
     //download command
