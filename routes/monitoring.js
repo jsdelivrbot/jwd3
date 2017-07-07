@@ -1,4 +1,5 @@
 var jwtauth = require("../lib/jwtauth");
+var dblogger = require("../lib/dblogger");
 var conf = require("../conf");
 var mongoose = require("mongoose");
 var chalk = require('chalk');
@@ -33,10 +34,11 @@ module.exports = function (app, io) {
     var queryIntervalSec = conf.settings.monitoringQueryIntervalMSec;
 
     var deviceTimeWarningDiff = conf.settings.monitoringDeviceDiffWarningSec;
+    var deviceWaitingAnswerMSec = conf.settings.deviceWatingAnswerMSec;
 
 
     //***SOCKET***
-
+    var idsBasket = {};
     //periodical task
     setInterval(function () {
         var curDate = new Date().toISOString()
@@ -69,10 +71,14 @@ module.exports = function (app, io) {
                         parseInt(timeArr[0]), parseInt(timeArr[1]), parseInt(timeArr[2]));
     }
 
+    //**********FROM DEVICE//**********
+
+    //answer from device
     ioRouter.on('kukuanswer', function (socket, args, next) {
         var msg = args[1];
-        //console.log(new Date() + 'kukuanswer. msg=' + msg);
 
+        //console.info('kukuanswer.id=', socket.id);
+        //console.info('io.sockets.connected=', Object.keys(io.sockets.connected));
         var params = JSON.parse(msg);
 
         //***scaner upsert***
@@ -91,7 +97,16 @@ module.exports = function (app, io) {
 
         Scaner.findOneAndUpdate(query, data, options, function (err, scaner) {
             if (err) {
-                console.log(chalk.red('scaner upsert error! ' + err.message));
+                console.log('scaner upsert error! ' + err.message);
+
+                dblogger.log({
+                    source: 'monitoring.kukuanswer',
+                    event_name: 'Scaner.findOneAndUpdate',
+                    success: false,
+                    date: new Date(),
+                    params: JSON.stringify(data),
+                    note: err.message
+                });
                 return;
             }
 
@@ -103,36 +118,105 @@ module.exports = function (app, io) {
                 ip4: params['ip4'],
                 mac: params['mac'],
                 wifiname: params['wifiname'],
+                socketId: socket.id,
                 deviceTimeStamp: dateParse(params['devicetimestamp'])
             };
             options = { upsert: true };
 
             OnlineScaner.findOneAndUpdate(query, data, options, function (err, onlinescaner) {
                 if (err) {
-                    console.log(chalk.red('onlinescaner upsert error! ' + err.message));
+                    console.log('onlinescaner upsert error! ' + err.message);
+
+                    dblogger.log({
+                        source: 'monitoring.kukuanswer',
+                        event_name: 'OnlineScaner.findOneAndUpdate',
+                        success: false,
+                        date: new Date(),
+                        params: JSON.stringify(data),
+                        note: err.message
+                    });
                     return;
                 }
+
+                /*dblogger.log({
+                source: 'monitoring.kukuanswer',
+                event_name: 'OnlineScaner.findOneAndUpdate',
+                success: true,
+                date: new Date(),
+                params: JSON.stringify(data),
+                note: 'success upsert'
+                });*/
             });
         });
     });
 
+    //answer from device on download command
     ioRouter.on('dlanswer', function (socket, args, next) {
-        console.log('download answer ', args);
-        io.sockets.emit('dlanswer', args);
+        var sourceId = socket.id; //id from device's socket
+
+        if (sourceId in idsBasket) {
+            var destId = idsBasket[sourceId];
+
+            io.sockets.emit('unblockrowid', args);
+            io.to(destId).emit('dlanswer', args);
+
+            delete idsBasket[sourceId];
+
+            dblogger.log({
+                source: 'monitoring.dlanswer',
+                event_name: 'download from service',
+                success: true,
+                date: new Date()
+                //params: uuid
+            });
+        }
+    });
+
+
+    //**********FROM BROWSER CLIENT//**********
+
+    //download from device
+    ioRouter.on('dl', function (socket, args, next) {
+        var data = args[1];
+
+        var destId = data['socketId'];
+        var uuid = data['uuid'];
+        var rowid = data['rowid'];
+        var sourceId = socket.id; //browser sender
+        var ids = Object.keys(io.sockets.connected);
+
+        if (ids.indexOf(destId) === -1) {
+            io.to(sourceId).emit('dlanswer', {
+                success: false,
+                info: "failed to find device"
+            });
+
+            dblogger.log({
+                source: 'monitoring.dl',
+                event_name: 'failed to find device',
+                success: false,
+                date: new Date(),
+                params: 'uuid: ' + uuid + ', rowid: ' + rowid
+            });
+
+            return;
+        }
+
+        idsBasket[destId] = sourceId;
+
+        io.sockets.emit('blockrowid', rowid);//command to all browsers
+        io.to(destId).emit('download', rowid); //command to device
+
+        dblogger.log({
+            source: 'monitoring.dl',
+            event_name: 'download from service',
+            success: true,
+            date: new Date(),
+            params: 'uuid: ' + uuid + ', rowid: ' + rowid
+        });
     });
 
     io.use(ioRouter);
-
-    //download command
-    app.post("/api/dl", jwtauth.authenticate, function (req, res) {
-        var decoded = req.decoded;
-        var roles = decoded.roles;
-
-        //console.info(req.body);
-
-        io.sockets.emit('download', req.body.uuid);
-        return res.send('start download');
-    });
 
     //***PAGE***
     app.get("/monitoring", jwtauth.authenticate, function (req, res) {
@@ -167,7 +251,7 @@ module.exports = function (app, io) {
                 statusDeviceDiff: { $subtract: [deviceTimeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$deviceTimeStamp'] }, (1 / 1000)]}] }, //cur date and device date
 
                 _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
-                ip4: 1, mac: 1, wifiname: 1, deviceTimeStamp: 1
+                ip4: 1, mac: 1, wifiname: 1, socketId: 1, deviceTimeStamp: 1
             }
             }
         ], function (err, data) {

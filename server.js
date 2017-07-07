@@ -81,17 +81,11 @@ var io = require("socket.io").listen(server);
 //app.io = io;
 io.on('connection', function (socket) {
     console.log(chalk.cyan(new Date(), 'socket user connected'));
-    //socket.on('kuku', function (message) {
-    //    console.info('kuku: ', message);
-    //});
 
-    //setInterval(function () {
-    //    io.sockets.emit('download', {'tt': 123});
-    //}, 3000);
-
-    io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
+    //io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
     socket.on('disconnect', function () {
-        io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
+        console.log(chalk.cyan(new Date(), 'socket user disconnected'));
+        //io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
     });
 });
 
