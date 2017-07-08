@@ -77,9 +77,20 @@ module.exports = function (app, io) {
     ioRouter.on('kukuanswer', function (socket, args, next) {
         var msg = args[1];
 
-        //console.info('kukuanswer.id=', socket.id);
-        //console.info('io.sockets.connected=', Object.keys(io.sockets.connected));
-        var params = JSON.parse(msg);
+        var params
+        try {
+            params = JSON.parse(msg);
+        } catch (e) {
+            dblogger.log({
+                source: 'monitoring.kukuanswer',
+                event_name: 'failed to parse answer params',
+                success: false,
+                date: new Date(),
+                params: args
+            });
+
+            return;
+        }
 
         //***scaner upsert***
         var query = {
@@ -137,15 +148,6 @@ module.exports = function (app, io) {
                     });
                     return;
                 }
-
-                /*dblogger.log({
-                source: 'monitoring.kukuanswer',
-                event_name: 'OnlineScaner.findOneAndUpdate',
-                success: true,
-                date: new Date(),
-                params: JSON.stringify(data),
-                note: 'success upsert'
-                });*/
             });
         });
     });
@@ -157,17 +159,17 @@ module.exports = function (app, io) {
         if (sourceId in idsBasket) {
             var destId = idsBasket[sourceId];
 
-            io.sockets.emit('unblockrowid', args);
-            io.to(destId).emit('dlanswer', args);
+            io.sockets.emit('unblockrowid', args); //command to all browsers
+            io.to(destId).emit('dlanswer', args); //command browser sender
 
             delete idsBasket[sourceId];
 
             dblogger.log({
                 source: 'monitoring.dlanswer',
-                event_name: 'download from service',
+                event_name: 'answer from device',
                 success: true,
-                date: new Date()
-                //params: uuid
+                date: new Date(),
+                params: args
             });
         }
     });
@@ -185,6 +187,7 @@ module.exports = function (app, io) {
         var sourceId = socket.id; //browser sender
         var ids = Object.keys(io.sockets.connected);
 
+        //device not found
         if (ids.indexOf(destId) === -1) {
             io.to(sourceId).emit('dlanswer', {
                 success: false,
@@ -204,7 +207,7 @@ module.exports = function (app, io) {
 
         idsBasket[destId] = sourceId;
 
-        io.sockets.emit('blockrowid', rowid);//command to all browsers
+        io.sockets.emit('blockrowid', rowid); //command to all browsers
         io.to(destId).emit('download', rowid); //command to device
 
         dblogger.log({

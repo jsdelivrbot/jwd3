@@ -82,10 +82,8 @@ var io = require("socket.io").listen(server);
 io.on('connection', function (socket) {
     console.log(chalk.cyan(new Date(), 'socket user connected'));
 
-    //io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
     socket.on('disconnect', function () {
         console.log(chalk.cyan(new Date(), 'socket user disconnected'));
-        //io.sockets.emit('clients', { 'totalClients': Object.keys(io.sockets.connected).length });
     });
 });
 
