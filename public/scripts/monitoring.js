@@ -264,7 +264,7 @@ $(document).ready(function () {
         }
     });
 
-    //socket set time answer
+    //socket set setting
     socket.on('setsettinganswer', function (msg) {
         //console.log('setsettinganswer ', msg);
         var jsonAnswer

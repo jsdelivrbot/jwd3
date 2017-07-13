@@ -38,7 +38,7 @@ module.exports = function (app, io) {
 
 
     //***SOCKET***
-    var idsBasket = {};
+    //var idsBasket = {};
     //periodical task
     setInterval(function () {
         var curDate = new Date().toISOString()
@@ -102,7 +102,7 @@ module.exports = function (app, io) {
                 event_name: 'failed to parse answer params',
                 success: false,
                 date: new Date(),
-                params: args
+                params: msg
             });
 
             return;
@@ -172,24 +172,36 @@ module.exports = function (app, io) {
 
     //answer from device on download command
     ioRouter.on('dev_dlanswer', function (socket, args, next) {
-        var sourceId = socket.id; //id from device's socket
+        var msg = args[1];
+        var params;
 
-        if (sourceId in idsBasket) {
-            var destId = idsBasket[sourceId];
-
-            io.sockets.emit('unblockrowid', args); //command to all browsers
-            io.to(destId).emit('dlanswer', args); //command browser sender
-
-            delete idsBasket[sourceId];
-
+        try {
+            params = JSON.parse(msg);
+        } catch (e) {
             dblogger.log({
-                source: 'monitoring.dlanswer',
-                event_name: 'answer from device',
-                success: true,
+                source: 'monitoring.dev_dlanswer',
+                event_name: 'failed to parse answer params',
+                success: false,
                 date: new Date(),
-                params: args
+                params: msg
             });
+
+            return;
         }
+
+        var browserSourceId = params['browserSourceId'];
+        var success = params['success'];
+
+        io.sockets.emit('unblockrowid', args); //command to all browsers
+        io.to(browserSourceId).emit('dlanswer', args); //command browser sender
+
+        dblogger.log({
+            source: 'monitoring.dev_dlanswer',
+            event_name: 'answer from device',
+            success: (success === "true"),
+            date: new Date(),
+            params: args
+        });
     });
 
     //answer from device on set time command
@@ -208,20 +220,21 @@ module.exports = function (app, io) {
                 event_name: 'failed to parse answer params',
                 success: false,
                 date: new Date(),
-                params: args
+                params: msg
             });
 
             return;
         }
 
         var browserSourceId = params['browserSourceId'];
+        var success = params['success'];
 
         io.to(browserSourceId).emit('setsettinganswer', args); //command browser sender
 
         dblogger.log({
-            source: 'monitoring.setservertimeanswer',
+            source: 'monitoring.dev_setsettinganswer',
             event_name: 'answer from device',
-            success: true,
+            success: (success === "true"),
             date: new Date(),
             params: args
         });
@@ -231,17 +244,19 @@ module.exports = function (app, io) {
 
     //download from device
     ioRouter.on('dl', function (socket, args, next) {
+        //console.info('dl args=', args);
         var data = args[1];
 
         var destId = data['socketId'];
         var uuid = data['uuid'];
         var rowid = data['rowid'];
-        var sourceId = socket.id; //browser sender
+        var browserSourceId = socket.id; //browser sender
         var ids = Object.keys(io.sockets.connected);
 
+        //console.info('destId:', destId, ', ids:', ids);
         //device not found
         if (ids.indexOf(destId) === -1) {
-            io.to(sourceId).emit('dlanswer', {//to browser
+            io.to(browserSourceId).emit('dlanswer', {//to browser
                 success: false,
                 info: "failed to find device"
             });
@@ -257,17 +272,20 @@ module.exports = function (app, io) {
             return;
         }
 
-        idsBasket[destId] = sourceId;
-
+        var sendData = {
+            uuid: uuid,
+            browserSourceId: browserSourceId,
+            rowid: rowid
+        };
         io.sockets.emit('blockrowid', rowid); //command to all browsers
-        io.to(destId).emit('dev_download', rowid); //command to device
+        io.to(destId).emit('dev_download', sendData); //command to device
 
         dblogger.log({
             source: 'monitoring.dl',
             event_name: 'download from service',
             success: true,
             date: new Date(),
-            params: 'uuid: ' + uuid + ', rowid: ' + rowid
+            params: 'destId:' + destId + ', uuid:' + uuid + ', rowid:' + rowid + ', browserSourceId:' + browserSourceId
         });
     });
 
@@ -289,13 +307,13 @@ module.exports = function (app, io) {
         if (ids.indexOf(destId) === -1) {
             //console.log('failed to find device ', args);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 io.to(browserSourceId).emit('setsettinganswer', {//to browser
                     success: false,
                     info: "failed to find device"
-                });    
+                });
             }, 300);
-            
+
             dblogger.log({
                 source: 'monitoring.setsetting',
                 event_name: 'failed to find device',
