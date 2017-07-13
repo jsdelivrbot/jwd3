@@ -45,7 +45,7 @@ module.exports = function (app, io) {
                                     .replace(/T/, ' ')
                                     .replace(/\..+/, '');
 
-        io.sockets.emit('kuku', curDate);
+        io.sockets.emit('dev_kuku', curDate);
     }, queryIntervalSec);
 
     //datetime parse
@@ -71,10 +71,26 @@ module.exports = function (app, io) {
                         parseInt(timeArr[0]), parseInt(timeArr[1]), parseInt(timeArr[2]));
     }
 
+    //dd.mm.yyyy hh:mm:ss
+    var dateFormat = function (date) {
+        if (date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date)) {
+            var str = date.getDate() + '.' +
+                      (date.getMonth() + 1) + '.' +
+                      date.getFullYear() + ' ' +
+                      date.getHours() + ':' +
+                      date.getMinutes() + ':' +
+                      date.getSeconds();
+
+            return str;
+        } else {
+            return null;
+        }
+    }
+
     //**********FROM DEVICE//**********
 
     //answer from device
-    ioRouter.on('kukuanswer', function (socket, args, next) {
+    ioRouter.on('dev_kukuanswer', function (socket, args, next) {
         var msg = args[1];
 
         var params
@@ -94,7 +110,7 @@ module.exports = function (app, io) {
 
         //***scaner upsert***
         var query = {
-            ferry: params['ferry'],
+            //ferry: params['ferry'],
             sn: params['sn'],
             uuid: params['uuid']
         };
@@ -148,12 +164,14 @@ module.exports = function (app, io) {
                     });
                     return;
                 }
+
+
             });
         });
     });
 
     //answer from device on download command
-    ioRouter.on('dlanswer', function (socket, args, next) {
+    ioRouter.on('dev_dlanswer', function (socket, args, next) {
         var sourceId = socket.id; //id from device's socket
 
         if (sourceId in idsBasket) {
@@ -174,6 +192,40 @@ module.exports = function (app, io) {
         }
     });
 
+    //answer from device on set time command
+    ioRouter.on('dev_setsettinganswer', function (socket, args, next) {
+        //console.log('dev_setsettinganswer ', args);
+
+        var devSourceId = socket.id; //id from device's socket
+        var msg = args[1];
+        var params;
+
+        try {
+            params = JSON.parse(msg);
+        } catch (e) {
+            dblogger.log({
+                source: 'monitoring.dev_setservertimeanswer',
+                event_name: 'failed to parse answer params',
+                success: false,
+                date: new Date(),
+                params: args
+            });
+
+            return;
+        }
+
+        var browserSourceId = params['browserSourceId'];
+
+        io.to(browserSourceId).emit('setsettinganswer', args); //command browser sender
+
+        dblogger.log({
+            source: 'monitoring.setservertimeanswer',
+            event_name: 'answer from device',
+            success: true,
+            date: new Date(),
+            params: args
+        });
+    });
 
     //**********FROM BROWSER CLIENT//**********
 
@@ -189,7 +241,7 @@ module.exports = function (app, io) {
 
         //device not found
         if (ids.indexOf(destId) === -1) {
-            io.to(sourceId).emit('dlanswer', {
+            io.to(sourceId).emit('dlanswer', {//to browser
                 success: false,
                 info: "failed to find device"
             });
@@ -208,7 +260,7 @@ module.exports = function (app, io) {
         idsBasket[destId] = sourceId;
 
         io.sockets.emit('blockrowid', rowid); //command to all browsers
-        io.to(destId).emit('download', rowid); //command to device
+        io.to(destId).emit('dev_download', rowid); //command to device
 
         dblogger.log({
             source: 'monitoring.dl',
@@ -219,6 +271,60 @@ module.exports = function (app, io) {
         });
     });
 
+    //set server time
+    ioRouter.on('setsetting', function (socket, args, next) {
+        //console.log('setsetting ', args);
+        var data = args[1];
+
+        var destId = data['socketId'];
+        var uuid = data['uuid'];
+        var name = data['name'];
+        var value = data['value'];
+
+
+        var browserSourceId = socket.id; //browser sender
+        var ids = Object.keys(io.sockets.connected);
+
+        //device not found
+        if (ids.indexOf(destId) === -1) {
+            io.to(browserSourceId).emit('setservertimeanswer', {//to browser
+                success: false,
+                info: "failed to find device"
+            });
+
+            dblogger.log({
+                source: 'monitoring.setservertime',
+                event_name: 'failed to find device',
+                success: false,
+                date: new Date(),
+                params: 'uuid: ' + uuid + ', rowid: ' + rowid
+            });
+
+            return;
+        }
+
+        //console.log('dev_setservertime');
+        var dateFormatStr = dateFormat(new Date());
+        var sendData = {
+            dateFormatStr: dateFormatStr,
+            browserSourceId: browserSourceId,
+            name: name,
+            value: value
+        };
+
+        io.to(destId).emit('dev_setsetting', sendData); //command to device
+
+        dblogger.log({
+            source: 'monitoring.setservertime',
+            event_name: 'set server time',
+            success: true,
+            date: new Date(),
+            params: 'uuid: ' + uuid + ', sendData: ' + sendData
+        });
+    });
+
+
+
     io.use(ioRouter);
 
     //***PAGE***
@@ -226,6 +332,7 @@ module.exports = function (app, io) {
         var decoded = req.decoded;
         var roles = decoded.roles;
 
+        //TODO чеза хрень ?
         return res.render('monitoring', {
             roles: roles
         });
@@ -252,6 +359,8 @@ module.exports = function (app, io) {
 
                 deviceTimeDiff: { $multiply: [{ $subtract: [new Date(), '$deviceTimeStamp'] }, (1 / 1000)] }, //sec
                 statusDeviceDiff: { $subtract: [deviceTimeWarningDiff, { $multiply: [{ $subtract: [new Date(), '$deviceTimeStamp'] }, (1 / 1000)]}] }, //cur date and device date
+
+                serverTime: { $subtract: [new Date(), 0] },
 
                 _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
                 ip4: 1, mac: 1, wifiname: 1, socketId: 1, deviceTimeStamp: 1

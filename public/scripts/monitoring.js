@@ -55,9 +55,11 @@ $(document).ready(function () {
         return txt;
     }
 
+    var lastSel;
     $('#' + noteGridName).jqGrid({
         caption: 'scaner',
         url: '/api/scaner_data',
+        //editurl: '',
         mtype: 'POST',
         datatype: 'json',
         ignoreCase: true,
@@ -67,17 +69,43 @@ $(document).ready(function () {
                    { name: 'timeDiff', width: 150, editable: false, align: 'right', formatter: timeDiffFormatter },
                    { name: 'status', width: 70, editable: false, align: 'right', formatter: timeWarningFormatter },
                    { name: 'uuid', width: 150, editable: false, align: 'right' },
-                   { name: 'ferry', width: 100, editable: false, align: 'right' },
+                   { name: 'ferry', width: 100, editable: true, align: 'right' },
                    { name: 'sn', width: 150, editable: false, align: 'right' },
                    { name: 'ip4', width: 120, editable: false, align: 'right' },
                    { name: 'mac', width: 120, editable: false, align: 'right' },
                    { name: 'wifiname', width: 150, editable: false, align: 'right' },
                    { name: 'socketId', width: 150, editable: false, align: 'center' },
-                   { name: 'deviceTimeStamp', width: 200, editable: false, align: 'right', formatter: deviceTsFormatter}],
+                   { name: 'deviceTimeStamp', width: 200, editable: true, align: 'right', formatter: deviceTsFormatter}],
         rowNum: 20,
         rowList: [10, 20, 30],
         height: 'auto',
-        pager: '#' + noteGridPager
+        pager: '#' + noteGridPager,
+
+        //cell editing
+        /*onSelectRow: function (id) {
+        if (id && id !== lastSel) {
+        $('#' + noteGridName).restoreRow(lastSel);
+        lastSel = id;
+        }
+
+        $('#' + noteGridName).editRow(id, true);
+        },*/
+
+        loadComplete: function (data) {
+            if (data.length === 0) {
+                return;
+            }
+
+            var data0 = data[0];
+            var fmtDate;
+            try {
+                fmtDate = convertDate(new Date(data0['serverTime']));
+            } catch (e) {
+                fmtDate = 'n/a';
+            }
+
+            $('#message').html('Время на сервере: ' + fmtDate);
+        }
     });
 
     var reloadGrid = function () {
@@ -127,6 +155,53 @@ $(document).ready(function () {
         return false;
     });
 
+    //set setting
+    $('#setFerryName').bind('click', function () {
+        var grid = $('#' + noteGridName);
+        var selRowId = grid.jqGrid('getGridParam', 'selrow');
+
+        if (selRowId === null) {
+            swal("Выберите сканер");
+            return false;
+        }
+
+        swal({
+            title: "Название парома",
+            //text: "",
+            type: "input",
+            showCancelButton: true,
+            closeOnConfirm: true,
+            animation: "slide-from-top",
+            inputPlaceholder: "Название парома"
+        },
+        function (inputValue) {
+            if (inputValue === false)
+                return false;
+
+            if (inputValue === "") {
+                swal.showInputError("Введите название парома");
+                return false;
+            };
+
+            //device command
+            var rowData = grid.getRowData(selRowId);
+            var uuid = rowData.uuid;
+            var socketId = rowData.socketId;
+
+            var data = {
+                uuid: uuid,
+                socketId: socketId,
+                name: 'ferry',
+                value: inputValue
+            };
+
+            //TODO only to server
+            socket.emit('setsetting', data);
+        });
+
+        return false;
+    });
+
     //block id in grid while downloading
     socket.on('blockrowid', function (rowid) {
         blockingIds.push(rowid);
@@ -152,7 +227,7 @@ $(document).ready(function () {
     });
 
     //server emit
-    socket.on('kuku', function (msg) {
+    socket.on('dev_kuku', function (msg) {
         reloadGrid();
     });
 
@@ -181,6 +256,38 @@ $(document).ready(function () {
         } else {
             swal({
                 title: 'Ошибка при скачивании',
+                text: info,
+                type: 'error',
+                //timer: 3000,
+                showConfirmButton: true
+            });
+        }
+    });
+
+    //socket set time answer
+    socket.on('setsettinganswer', function (msg) {
+        //console.log('setsettinganswer ', msg);
+        var jsonAnswer
+        try {
+            jsonAnswer = JSON.parse(msg[1]); //from device
+        } catch (e) {
+            jsonAnswer = msg;
+        }
+
+        var res = ('success' in jsonAnswer) ? jsonAnswer['success'] : 'false';
+        var info = ('info' in jsonAnswer) ? jsonAnswer['info'] : 'error';
+
+        if (res == "true") {
+            swal({
+                title: 'Успешное установка времени',
+                text: info,
+                type: 'success',
+                //timer: 3000,
+                showConfirmButton: true
+            });
+        } else {
+            swal({
+                title: 'Ошибка при установке времени',
                 text: info,
                 type: 'error',
                 //timer: 3000,

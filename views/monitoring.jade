@@ -2,6 +2,7 @@ extends layout
 
 block content
     p monitoring
+    //p *для редактирования нужно перейти в поле
 
     div(id="content")
         p(id="message")
@@ -12,8 +13,8 @@ block content
     div
         -if ( roles && roles.indexOf("admin") !== -1 ) {
             input(id="getScanerFile", type="button", class="btn btn-success has-margin", value="Скачать логи")
-            input(id="setScanerTime", type="button", class="btn btn-success has-margin", value="Установить время")
-        - }
+            input(id="setFerryName", type="button", class="btn btn-success has-margin", value="Установить название парома")
+        -}
         
 
     link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
@@ -24,5 +25,6 @@ block content
     script(src="/libs/sweetalert/dist/sweetalert.min.js")
     script(src="/libs/nprogress/nprogress.js")
     script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
+    //script(src="/libs/jqGrid/src/grid.inlinedit.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
     script(src="/socket.io/socket.io.js")
