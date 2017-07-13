@@ -279,7 +279,7 @@ $(document).ready(function () {
 
         if (res == "true") {
             swal({
-                title: 'Успешное установка времени',
+                title: 'Успешное установка',
                 text: info,
                 type: 'success',
                 //timer: 3000,
@@ -287,7 +287,7 @@ $(document).ready(function () {
             });
         } else {
             swal({
-                title: 'Ошибка при установке времени',
+                title: 'Ошибка при установке',
                 text: info,
                 type: 'error',
                 //timer: 3000,

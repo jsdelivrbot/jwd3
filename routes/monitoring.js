@@ -287,17 +287,21 @@ module.exports = function (app, io) {
 
         //device not found
         if (ids.indexOf(destId) === -1) {
-            io.to(browserSourceId).emit('setservertimeanswer', {//to browser
-                success: false,
-                info: "failed to find device"
-            });
+            //console.log('failed to find device ', args);
 
+            setTimeout(function() {
+                io.to(browserSourceId).emit('setsettinganswer', {//to browser
+                    success: false,
+                    info: "failed to find device"
+                });    
+            }, 300);
+            
             dblogger.log({
-                source: 'monitoring.setservertime',
+                source: 'monitoring.setsetting',
                 event_name: 'failed to find device',
                 success: false,
                 date: new Date(),
-                params: 'uuid: ' + uuid + ', rowid: ' + rowid
+                params: 'uuid: ' + uuid + ', data: ' + data
             });
 
             return;
