@@ -9,10 +9,10 @@ var conf = require("./conf");
 var cors = require("cors");
 var chalk = require('chalk');
 var sitePreload = require('./lib/site-preload.js');
+var os = require( 'os' );
 
 //for net socket
 var net = require('net');
-//var sockets = [];
 
 var app = express();
 
@@ -91,7 +91,22 @@ require("./routes/auth")(app);
 require("./routes/index")(app);
 require("./routes/gridresult")(app);
 require("./routes/monitoring")(app, io);
+require("./routes/workdiagram")(app);
 
 server.listen(app.get("port"), function () {
     console.log(chalk.green("listen on port: " + app.get("port")));
+
+    //ip
+    var interfaces = os.networkInterfaces();
+    var addresses = [];
+    for (var k in interfaces) {
+        for (var k2 in interfaces[k]) {
+            var address = interfaces[k][k2];
+            if (address.family === 'IPv4' && !address.internal) {
+                addresses.push(address.address);
+            }
+        }
+    }
+
+    console.log('server ips->', addresses);
 });

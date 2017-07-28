@@ -1,7 +1,10 @@
-$(document).ready(function () {
-    var noteGridName = 'scanerGrid';
-    var noteGridPager = 'scanerPager';
+var myparams = {
+    noteGridName: 'scanerGrid',
+    noteGridPager: 'scanerPager',
+    workdiagram: 'workDiagram'
+};
 
+$(document).ready(function () {
     var rowidBuf;
 
     //GRID
@@ -56,30 +59,31 @@ $(document).ready(function () {
     }
 
     var lastSel;
-    $('#' + noteGridName).jqGrid({
+    $('#' + myparams.noteGridName).jqGrid({
         caption: 'scaner',
         url: '/api/scaner_data',
         //editurl: '',
         mtype: 'POST',
         datatype: 'json',
         ignoreCase: true,
-        colNames: ['_id', 'Дата прихода данных', 'Разница во времени', 'Статус', 'uuid', 'Паром', 'Серийный номер', 'ip4', 'mac', 'wifiname', 'socketId', 'Время на устройстве'],
+        colNames: ['_id', 'Дата прихода данных', 'Разница во времени', 'Статус', 'scaner_id', 'uuid', 'Паром', 'Серийный номер', 'ip4', 'mac', 'wifiname', 'socketId', 'Время на устройстве'],
         colModel: [{ name: '_id', width: 200, hidden: true, editable: false, key: true },
                    { name: 'registerDate', width: 150, editable: false, align: 'right', formatter: dateFormatter },
                    { name: 'timeDiff', width: 150, editable: false, align: 'right', formatter: timeDiffFormatter },
                    { name: 'status', width: 70, editable: false, align: 'right', formatter: timeWarningFormatter },
+                   { name: 'scaner_id', width: 150, editable: false, align: 'right', hidden: true },
                    { name: 'uuid', width: 150, editable: false, align: 'right' },
                    { name: 'ferry', width: 100, editable: true, align: 'right' },
                    { name: 'sn', width: 150, editable: false, align: 'right' },
                    { name: 'ip4', width: 120, editable: false, align: 'right' },
                    { name: 'mac', width: 120, editable: false, align: 'right' },
                    { name: 'wifiname', width: 150, editable: false, align: 'right' },
-                   { name: 'socketId', width: 150, editable: false, align: 'center' },
+                   { name: 'socketId', width: 150, editable: false, align: 'center', hidden: false },
                    { name: 'deviceTimeStamp', width: 200, editable: true, align: 'right', formatter: deviceTsFormatter}],
         rowNum: 20,
         rowList: [10, 20, 30],
         height: 'auto',
-        pager: '#' + noteGridPager,
+        pager: '#' + myparams.noteGridPager,
 
         //cell editing
         /*onSelectRow: function (id) {
@@ -110,11 +114,11 @@ $(document).ready(function () {
 
     var reloadGrid = function () {
         //console.info(new Date());
-        var grid = $('#' + noteGridName);
+        var grid = $('#' + myparams.noteGridName);
         grid.trigger("reloadGrid", [{ current: true}]);
     }
 
-    $('#' + noteGridName).jqGrid('navGrid', '#' + noteGridPager, { edit: false, add: false, del: false, search: false });
+    $('#' + myparams.noteGridName).jqGrid('navGrid', '#' + myparams.noteGridPager, { edit: false, add: false, del: false, search: false });
 
 
     //***SOCKET***
@@ -124,7 +128,7 @@ $(document).ready(function () {
     //download
     var blockingIds = [];
     $('#getScanerFile').bind('click', function () {
-        var grid = $('#' + noteGridName);
+        var grid = $('#' + myparams.noteGridName);
         var selRowId = grid.jqGrid('getGridParam', 'selrow');
 
         if (blockingIds.indexOf(selRowId) !== -1) {
@@ -157,7 +161,7 @@ $(document).ready(function () {
 
     //set setting
     $('#setFerryName').bind('click', function () {
-        var grid = $('#' + noteGridName);
+        var grid = $('#' + myparams.noteGridName);
         var selRowId = grid.jqGrid('getGridParam', 'selrow');
 
         if (selRowId === null) {
@@ -295,7 +299,6 @@ $(document).ready(function () {
             });
         }
     });
-
 });
 
 

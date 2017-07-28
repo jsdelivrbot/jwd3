@@ -4,10 +4,10 @@ $(document).ready(function () {
     var docContainerName = 'docContainer';
 
     //SOCKET
-    var socket = io();
+    /*var socket = io();
     socket.on('clients', function (msg) {
         $('#totalUsers').html('Пользователей онлайн: ' + msg.totalClients);
-    });
+    });*/
 
     var loadDocData = function () {
         $.ajax({
@@ -62,7 +62,7 @@ $(document).ready(function () {
             bodytext += '<td>' + tmp + currentDoc.name + '</span>' + '</td>';
 
             //size
-            tmp = (currentDoc.fileName === undefined) ? "" : (parseInt(currentDoc.size) / 1024 / 1024).toFixed(1); //MB
+            tmp = (currentDoc.fileName === undefined) ? "" : (parseInt(currentDoc.size) / 1024 / 1024).toFixed(2); //MB
             bodytext += '<td>' + tmp + '</td>';
 
             //href

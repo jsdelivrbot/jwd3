@@ -14,17 +14,26 @@ block content
         -if ( roles && roles.indexOf("admin") !== -1 ) {
             input(id="getScanerFile", type="button", class="btn btn-success has-margin", value="Скачать логи")
             input(id="setFerryName", type="button", class="btn btn-success has-margin", value="Установить название парома")
+            input(id="showWorkDiagram", type="button", class="btn btn-success has-margin", value="Показать диаграмму работы")
         -}
-        
 
+    div
+        div(id="workDiagram")
+        
     link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
     link(rel="stylesheet", href="/libs/nprogress/nprogress.css")
     link(rel="stylesheet", href="/libs/sweetalert/dist/sweetalert.css")
+    link(rel="stylesheet", href="/libs/chartist/chartist.css")
 
     script(src="/scripts/monitoring.js")
+    script(src="/scripts/workdiagram.js")
     script(src="/libs/sweetalert/dist/sweetalert.min.js")
     script(src="/libs/nprogress/nprogress.js")
     script(src="/libs/jqGrid/js/jquery.jqGrid.min.js")
     //script(src="/libs/jqGrid/src/grid.inlinedit.js")
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
     script(src="/socket.io/socket.io.js")
+    script(src="/libs/chartist/chartist.min.js")
+
+    //link(rel="stylesheet", type="text/css", href="https://rawgit.com/gionkunz/chartist-js/master/dist/chartist.min.css")
+    //script(src="https://rawgit.com/gionkunz/chartist-js/master/dist/chartist.js")

@@ -9,6 +9,8 @@ var ioRouter = require('socket.io-events')();
 require("../models/Journal");
 require("../models/Scaner");
 require("../models/OnlineScaner");
+require("../models/ScanerRegistration");
+
 
 module.exports = function (app, io) {
     //upload
@@ -30,6 +32,8 @@ module.exports = function (app, io) {
     var Journal = mongoose.model("Journal");
     var Scaner = mongoose.model("Scaner");
     var OnlineScaner = mongoose.model("OnlineScaner");
+    var ScanerRegistration = mongoose.model("ScanerRegistration");
+
     var timeWarningDiff = conf.settings.monitoringTimeDiffWarningMinutes;
     var queryIntervalSec = conf.settings.monitoringQueryIntervalMSec;
 
@@ -146,10 +150,13 @@ module.exports = function (app, io) {
                 mac: params['mac'],
                 wifiname: params['wifiname'],
                 socketId: socket.id,
-                deviceTimeStamp: dateParse(params['devicetimestamp'])
+                deviceTimeStamp: dateParse(params['devicetimestamp']),
+                sourceFolder: params['sourcefolder'],
+                destZipFile: params['destzipfile']
             };
             options = { upsert: true };
 
+            //online scaner
             OnlineScaner.findOneAndUpdate(query, data, options, function (err, onlinescaner) {
                 if (err) {
                     console.log('onlinescaner upsert error! ' + err.message);
@@ -164,8 +171,24 @@ module.exports = function (app, io) {
                     });
                     return;
                 }
+            });
 
+            //register scaner
+            var scanerReg = new ScanerRegistration(data);
+            scanerReg.save(function (err, scaner) {
+                if(err) {
+                    console.log('scanerReg save error! ' + err.message);
 
+                    dblogger.log({
+                        source: 'monitoring.kukuanswer',
+                        event_name: 'ScanerRegistration.save',
+                        success: false,
+                        date: new Date(),
+                        params: JSON.stringify(data),
+                        note: err.message
+                    });
+                    return;
+                }
             });
         });
     });
@@ -337,8 +360,8 @@ module.exports = function (app, io) {
         io.to(destId).emit('dev_setsetting', sendData); //command to device
 
         dblogger.log({
-            source: 'monitoring.setservertime',
-            event_name: 'set server time',
+            source: 'monitoring.setsetting',
+            event_name: 'set setting',
             success: true,
             date: new Date(),
             params: 'uuid: ' + uuid + ', sendData: ' + sendData
@@ -384,8 +407,8 @@ module.exports = function (app, io) {
 
                 serverTime: { $subtract: [new Date(), 0] },
 
-                _id: 1, registerDate: 1, uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
-                ip4: 1, mac: 1, wifiname: 1, socketId: 1, deviceTimeStamp: 1
+                _id: 1, registerDate: 1, scaner_id: "$sc._id", uuid: "$sc.uuid", sn: "$sc.sn", ferry: "$sc.ferry",
+                ip4: 1, mac: 1, wifiname: 1, socketId: 1, deviceTimeStamp: 1, sourceFolder: 1, destZipFile: 1
             }
             }
         ], function (err, data) {

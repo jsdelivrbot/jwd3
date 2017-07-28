@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 
 var Schema = mongoose.Schema;
-var OnlineScaner = new Schema({
+var ScanerRegistration = new Schema({
     scaner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scaner'
@@ -16,4 +16,4 @@ var OnlineScaner = new Schema({
     sourceFolder: String,
     destZipFile: String
 });
-mongoose.model("OnlineScaner", OnlineScaner);
+mongoose.model("ScanerRegistration", ScanerRegistration);
