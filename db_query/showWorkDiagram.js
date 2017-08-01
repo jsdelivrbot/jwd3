@@ -1,12 +1,13 @@
-function(data) {    
-    var id = ('id' in data) ? ObjectId(data['id']) : null;
-    var beginDate = ('beginDate' in data) ? ISODate(data['beginDate']) : ISODate('2017-07-28T00:00:00.000Z');//if null then minimum date
-    var endDate = ('endDate' in data) ? ISODate(data['endDate']) : new Date();//if null then maximum date(now)
+function(scanerId, beginDateUnix, endDateUnix, compareDiff) {
+    var id = (scanerId) ? ObjectId(scanerId) : null;
+    var beginDate = (beginDateUnix) ? new Date(beginDateUnix * 1000) : ISODate('2017-07-28T00:00:00.000Z');//if null then minimum date
+    var endDate = (endDateUnix) ? new Date(endDateUnix * 1000) : new Date();//if null then maximum date(now)
+    var compareDiff = (compareDiff) ? compareDiff : 10*60*1000;
     
     var query = {
         registerDate: { $gte: beginDate, $lte: endDate }
     };
-    
+        
     if(id) {
         query['scaner'] = id;
     }
@@ -26,7 +27,7 @@ function(data) {
         
         var diff = items[x].registerDate - items[x-1].registerDate;//ms
         var datePoint = dateFormat(items[x-1].registerDate);
-        var val = (diff < 10*60*1000) ? 1 : 0;
+        var val = (diff < compareDiff) ? 1 : 0;
         var len = series.length;
         
         
