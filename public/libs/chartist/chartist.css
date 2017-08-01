@@ -1,8 +1,9 @@
 .ct-label {
-  fill: rgba(0, 0, 0, 0.4);
-  color: rgba(0, 0, 0, 0.4);
+  fill: rgba(0, 0, 0, );
+  color: rgba(0, 0, 0, 0.8);
   font-size: 0.75rem;
-  line-height: 1; }
+  line-height: 1;
+}
 
 .ct-chart-line .ct-label,
 .ct-chart-bar .ct-label {
@@ -39,7 +40,8 @@
   -ms-flex-pack: flex-start;
   justify-content: flex-start;
   text-align: left;
-  text-anchor: start; }
+  text-anchor: start; 
+}
 
 .ct-label.ct-vertical.ct-start {
   -webkit-box-align: flex-end;

@@ -88,3 +88,12 @@ div[readonly] {
 .monitoring-ok {
     background-color: #8fff7e;
 }
+
+.divRow {
+    display: table;
+    border-spacing: 10px; /*Optional*/
+}
+
+.divColumn {
+    display: table-cell;
+}

@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    p monitoring
+    //p monitoring
     //p *для редактирования нужно перейти в поле
 
     div(id="content")
@@ -14,16 +14,37 @@ block content
         -if ( roles && roles.indexOf("admin") !== -1 ) {
             input(id="getScanerFile", type="button", class="btn btn-success has-margin", value="Скачать логи")
             input(id="setFerryName", type="button", class="btn btn-success has-margin", value="Установить название парома")
-            input(id="showWorkDiagram", type="button", class="btn btn-success has-margin", value="Показать диаграмму работы")
         -}
 
     div
-        div(id="workDiagram")
+        br
+        fieldset
+            legend Диаграмма работы
+
+            div(class="divColumn")
+                div(class="divRow")
+                    label(for="beginDate") Начало
+                    input(id="beginDate", type="text")
+                div(class="divRow")
+                    label(for="endDate") Окончание
+                    input(id="endDate", type="text")
+                div(class="divRow")
+                    label(for="compareDiff") Детализация(мин)
+                    input(id="compareDiff", type="number", val="10")
+
+                div(class="divRow")
+                    -if ( roles && roles.indexOf("admin") !== -1 ) {
+                        input(id="showWorkDiagram", type="button", class="btn btn-success has-margin", value="Показать")
+                    -}
+
+            div(id="workDiagram")
+                div(id="diagramMessage", class="ttest")
         
     link(rel="stylesheet", href="/libs/jqGrid/src/css/ui.jqgrid.css")
     link(rel="stylesheet", href="/libs/nprogress/nprogress.css")
     link(rel="stylesheet", href="/libs/sweetalert/dist/sweetalert.css")
     link(rel="stylesheet", href="/libs/chartist/chartist.css")
+    link(rel="stylesheet", href="/libs/datetimepicker/jquery.datetimepicker.min.css")
 
     script(src="/scripts/monitoring.js")
     script(src="/scripts/workdiagram.js")
@@ -34,6 +55,8 @@ block content
     script(src="/libs/jqGrid/js/i18n/grid.locale-en.js")
     script(src="/socket.io/socket.io.js")
     script(src="/libs/chartist/chartist.min.js")
+
+    script(src="/libs/datetimepicker/jquery.datetimepicker.full.min.js")
 
     //link(rel="stylesheet", type="text/css", href="https://rawgit.com/gionkunz/chartist-js/master/dist/chartist.min.css")
     //script(src="https://rawgit.com/gionkunz/chartist-js/master/dist/chartist.js")

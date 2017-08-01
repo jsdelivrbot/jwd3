@@ -1,6 +1,19 @@
-function(id) {
-    var items = db.getCollection('scanerregistrations').find({scaner: id}).toArray();
-
+function(data) {    
+    var id = ('id' in data) ? ObjectId(data['id']) : null;
+    var beginDate = ('beginDate' in data) ? ISODate(data['beginDate']) : ISODate('2017-07-28T00:00:00.000Z');//if null then minimum date
+    var endDate = ('endDate' in data) ? ISODate(data['endDate']) : new Date();//if null then maximum date(now)
+    
+    var query = {
+        registerDate: { $gte: beginDate, $lte: endDate }
+    };
+    
+    if(id) {
+        query['scaner'] = id;
+    }
+            
+    var items = db.getCollection('scanerregistrations').find(query).toArray();
+        
+    
     var labels = [];
     var series = [];
     var j = 0;
